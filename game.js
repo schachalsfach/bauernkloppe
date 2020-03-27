@@ -1,4 +1,4 @@
-game = new Chess();
+game = new Chess('8/2pppp2/8/8/8/8/2PPPP2/8 w - - 0 1');
 var socket = io();
 
 var color = "white";
@@ -12,6 +12,7 @@ var button = document.getElementById("button")
 var state = document.getElementById('state')
 
 var connect = function(){
+		//board.position('8/2pppp2/8/8/8/8/2PPPP2/8 w - - 0 1');
     roomId = room.value;
     if (roomId !== "" && parseInt(roomId) <= 100) {
         room.remove();
@@ -19,6 +20,8 @@ var connect = function(){
         button.remove();
         socket.emit('joined', roomId);
     }
+	console.log("connect");
+	board.position('8/2pppp2/8/8/8/8/2PPPP2/8 w - - 0 1');
 }
 
 socket.on('full', function (msg) {
@@ -27,10 +30,13 @@ socket.on('full', function (msg) {
 });
 
 socket.on('play', function (msg) {
+	board.position('8/2pppp2/8/8/8/8/2PPPP2/8 w - - 0 1');
     if (msg == roomId) {
         play = false;
         state.innerHTML = "Game in progress"
     }
+	console.log("play");
+	board.position('8/2pppp2/8/8/8/8/2PPPP2/8 w - - 0 1');
     // console.log(msg)
 });
 
@@ -60,8 +66,7 @@ var greySquare = function (square) {
 var onDragStart = function (source, piece) {
     // do not pick up pieces if the game is over
     // or if it's not that side's turn
-    if (game.game_over() === true || play ||
-        (game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+    if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
         (game.turn() === 'b' && piece.search(/^w/) !== -1) ||
         (game.turn() === 'w' && color === 'black') ||
         (game.turn() === 'b' && color === 'white') ) {
@@ -146,6 +151,7 @@ socket.on('player', (msg) => {
         onSnapEnd: onSnapEnd
     };
     board = ChessBoard('board', cfg);
+	board.position('8/2pppp2/8/8/8/8/2PPPP2/8 w - - 0 1');
 });
 // console.log(color)
 
