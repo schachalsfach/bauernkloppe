@@ -3,9 +3,8 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>Chess 0</title>
-  <!--  Including the chessboardjs files:-->
-  <!-- <script src="chess.js"></script>  -->
+  <title>Minispiele by Johannes</title>
+
   <link rel="stylesheet" 
   href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" 
   integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
@@ -14,7 +13,9 @@
   integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
     crossorigin="anonymous"></script>
     
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.js"></script>
+  <script src="bauernkloppe.js"></script>
+  <script src="chess.js"></script>
+
   <script src="./chessboard/js/chessboard-0.3.0.min.js"></script>
   <link rel="stylesheet" href="./chessboard/css/chessboard-0.3.0.min.css">
   <style>
@@ -34,33 +35,73 @@
 </head>
 
 <body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <!-- <script src="./index.js"></script> -->
-  <!-- <script>
-    var socket = io();
-  </script> -->
+
+<h1 style="color: #5e9ca0;">Willkommen zu den Minispielen!</h1>
+<h2 style="color: #2e6c80;">Inhalte weitestgehend als Ergänzung zum Deutschen Schulschachpatent</h2>
+<p>&nbsp;</p>
+<p>Alles hier wurde von mir "zusammengeschustert" - Fehler treten noch h&auml;ufig auf!</p>
+<p>Bitte bei einem Bug mich kontaktieren unter <a href="mailto:vorname.nachname@fau.de">vorname.nachname@fau.de</a></p>
+<p>Bei Anfragen bzgl. neuer Spiele/Verbesserungen oder Nutzung anderswo, bitte auch kontaktieren.</p>
+<p>Viele Gr&uuml;&szlig;e<br />Johannes Rieder<br />Schulschachstiftung&nbsp;&nbsp; </p>
+
+<h2 style="color: #2e6c80;">Angebotene Spiele:</h2>
+<table class="editorDemoTable" style="width: 629px;">
+<thead>
+<tr>
+<td style="width: 274px;"><b>Name des Spiels</b></td>
+<td style="width: 250px;"><b>Beschreibung</b></td>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="width: 274px;">Bauernkloppe</td>
+<td style="width: 250px;">Wie in "Fritz und Fertig" - 4 Bauern gegen 4 Bauern!</td>
+</tr>
+<tr>
+<td style="width: 274px;">&nbsp;</td>
+<td style="width: 250px;">&nbsp;</td>
+</tr>
+<tr>
+
+</tbody>
+</table>
+<p><strong>&nbsp;</strong></p>
+<p><strong>Ich freue mich &uuml;ber Feedback!</strong></p>
+<p><strong>&nbsp;</strong></p>
+
+
   <div class="container">
-        <div id="board" style="width: 500px; margin: auto"></div>
-      
+      <div id="board" style="width: 500px; margin: auto"></div>
       <div style="margin: auto"">
-      
         <div id="player"></div>
-        <div id="roomNumbers">Enter a room number between 0 and 99</div>
+        <div id="roomNumbers">Bitte geben Sie das gewünschte Spiel und wählen Sie zusammen mit Ihrem Gegner einen gemeinsamen Raum (1-20) aus</div>
         <form>
           <div class="row">
+		   <div class="col">
+					<select id="spielart" name="spielart">
+					<option value="Bauernkloppe">Bauernkloppe</option>
+					<option value="Springertour">Springertour</option>
+					<option value="Rundreise">Rundreise Läufer+Turm</option>
+					<option value="Springerparcours">Springerparcours</option>
+					<option value="Sumoringer">Sumoringer</option>
+					</select>
+			</div>		  
             <div class="col">
-              <input type="number" id="room" min="0" max="99" 
+              <input type="number" id="room" min="1" max="20" 
               class="form-control form-control-md number">
             </div>
+			
             <div class="col">
-              <button id="button" class="btn btn-success" onclick="connect()">Connect</button>
+              <button id="button" class="btn btn-success" onclick="connect()">Verbinden</button>
             </div>
+			
           </div>
         </form>
       
-        <div id="state">Join Game</div>
+        <div id="state"></div>
     </div>
     
   </div>

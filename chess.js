@@ -1327,13 +1327,14 @@ var Chess = function(fen) {
     },
 
     game_over: function() {
-      return (
+      return false;
+	  /*return (
         half_moves >= 100 ||
         in_checkmate() ||
         in_stalemate() ||
         insufficient_material() ||
         in_threefold_repetition()
-      )
+      ) */
     },
 
     validate_fen: function(fen) {
