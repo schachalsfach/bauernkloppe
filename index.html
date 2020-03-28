@@ -43,7 +43,7 @@
 <h2 style="color: #2e6c80;">Inhalte weitestgehend als Ergänzung zum Deutschen Schulschachpatent</h2>
 <p>&nbsp;</p>
 <p>Alles hier wurde von mir "zusammengeschustert" - Fehler treten noch h&auml;ufig auf!</p>
-<p>Im Falle eines Fehlers bitte mit kurzer Beschreibung senden an <a href="mailto:vorname.nachname@fau.de">vorname.nachname@fau.de</a></p>
+<p>Im Falle eines Fehlers bitte mit kurzer Beschreibung senden an meine E-Mail <a>[meinVorname].[meinNachname]@fau.de</a></p>
 <p>Bei Anfragen bzgl. neuer Spiele/Verbesserungen oder Nutzung anderswo, bitte auch kontaktieren.</p>
 <p>Viele Gr&uuml;&szlig;e<br />Johannes Rieder<br />Schulschachstiftung&nbsp;&nbsp; </p>
 
@@ -85,6 +85,7 @@
 		   <div class="col">
 					<select id="spielart" name="spielart">
 					<option value="Bauernkloppe">Bauernkloppe</option>
+					<option value="normal">Normales Schach</option>
 					<option value="Springertour">Springertour</option>
 					<option value="Rundreise">Rundreise Läufer+Turm</option>
 					<option value="Springerparcours">Springerparcours</option>
@@ -92,14 +93,44 @@
 					</select>
 			</div>		  
             <div class="col">
-              <input type="number" id="room" min="1" max="20" 
-              class="form-control form-control-md number">
+              		<select id="room" name="room">
+					<option value="1">Raum 1</option>
+					<option value="2">Raum 2</option>
+					<option value="3">Raum 3</option>
+					<option value="4">Raum 4</option>
+					<option value="5">Raum 5</option>
+					<option value="6">Raum 6</option>
+					<option value="7">Raum 7</option>
+					<option value="8">Raum 8</option>
+					<option value="9">Raum 9</option>
+					<option value="10">Raum 10</option>
+					<option value="11">Raum 11</option>
+					<option value="12">Raum 12</option>
+					<option value="13">Raum 13</option>
+					<option value="14">Raum 14</option>
+					<option value="15">Raum 15</option>
+					<option value="16">Raum 16</option>
+					<option value="17">Raum 17</option>
+					<option value="18">Raum 18</option>
+					<option value="19">Raum 19</option>
+					<option value="20">Raum 20</option>
+					</select>
+            </div>
+			<div class="col">
+              		<select id="enemy" name="enemy">
+					<option value="freund">Freund</option>
+					<option value="easy">Computer (leicht)</option>
+					<option value="normal">Computer (mittel)</option>
+					<option value="hard">Computer (schwer)</option>
+					</select>
             </div>
 			
             <div class="col">
               <button id="button" class="btn btn-success" onclick="connect()">Verbinden</button>
             </div>
-			
+			<div class="col">
+              <button id="button2" class="btn btn-danger" onclick="disconnect()" style="display:none;">Spiel verlassen</button>
+            </div>
           </div>
         </form>
       

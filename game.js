@@ -1,4 +1,3 @@
-//game = new Bauernkloppe('8/2pppp2/8/8/8/8/2PPPP2/8 w - - 0 1');
 var socket = io();
 
 var color = "white";
@@ -7,40 +6,65 @@ var roomId;
 var play = true;
 
 var room = document.getElementById("room")
+var spielart = document.getElementById("spielart")
+var game
+var enemy = document.getElementById("enemy")
 var roomNumber = document.getElementById("roomNumbers")
 var button = document.getElementById("button")
+var button2 = document.getElementById("button2")
 var state = document.getElementById('state')
 
 var connect = function(){
     roomId = room.value;
 	gameId = spielart.value;
-	if(gameId == "Spiel2") {
-		console.log("ERKANNT");
+	enemyId = enemy.value;
+	
+	
+	switch(gameId){
+		case "Bauernkloppe" : game = new Bauernkloppe();
+		break;
+		case "normal":
+		console.log("normales Schach");
+		roomId = +roomId + 20;
 		game = new Chess();
+		break;
+		default: console.log("Leer");
+		break;
 	}
-	else if (gameId == "Bauernkloppe") {
-		console.log("Bauernkloppe");
-		game = new Bauernkloppe('8/2pppp2/8/8/8/8/2PPPP2/8 w - - 0 1');
-	} 
-	else if (gameId == ""){
-		console.log("Leer");
-	} else {
-		console.log("Else-Fall");
-	}
-	
-	
-    if (roomId !== "" && parseInt(roomId) <= 100) {
-        room.remove();
-        roomNumber.innerHTML = "Room Number " + roomId;
-        button.remove();
-        socket.emit('joined', roomId);
-    }
 
+	
+    if (enemyId == "freund") {
+		spielart.remove();
+        room.remove();
+		enemy.remove();
+        roomNumber.innerHTML = "Du spielst in Raum Nummer " + roomId;
+        button.remove();
+		button2.style = "display:inline;";
+        socket.emit('joined', roomId);
+    } else if (enemyId == "easy"){
+		spielart.remove();
+        room.remove();
+		enemy.remove();
+        roomNumber.innerHTML = "Du spielst gegen den Computer";
+        button.remove();
+		button2.style = "display:inline;";
+        socket.emit('joinedAI', +roomId + 10);
+	} else {
+		
+	}
+
+}
+
+var disconnect = function(){
+		button2.style="display:none;";
+        socket.emit('disconnect');
 }
 
 socket.on('full', function (msg) {
     if(roomId == msg)
-        window.location.assign(window.location.href+ 'full.html');
+       // window.location.assign(window.location.href+ 'full.html');
+	state.innerHTML = "Dieser Raum ist leider schon voll, bitte wähle einen anderen Raum."
+
 });
 
 socket.on('play', function (msg) {
@@ -56,6 +80,10 @@ socket.on('move', function (msg) {
         game.move(msg.move);
         board.position(game.fen());
         console.log("moved")
+	if (game.game_over()) {
+        state.innerHTML = 'Spiel beendet';
+        socket.emit('gameOver', roomId)
+    }
     }
 });
 
@@ -96,7 +124,6 @@ var onDrop = function (source, target) {
         promotion: 'q' // NOTE: always promote to a queen for example simplicity
     });
     if (game.game_over()) {
-		
         state.innerHTML = 'Spiel beendet';
         socket.emit('gameOver', roomId)
     }
@@ -146,16 +173,16 @@ socket.on('player', (msg) => {
     if(players == 2){
         play = false;
         socket.emit('play', msg.roomId);
-        state.innerHTML = "Game in Progress"
+        state.innerHTML = "Spiel läuft gerade"
     }
     else
-        state.innerHTML = "Waiting for Second player";
+        state.innerHTML = "Warte auf Gegner";
 
 
     var cfg = {
         orientation: color,
         draggable: true,
-        position: 'start',
+        position: game.fen(),
         onDragStart: onDragStart,
         onDrop: onDrop,
         onMouseoutSquare: onMouseoutSquare,
@@ -163,7 +190,6 @@ socket.on('player', (msg) => {
         onSnapEnd: onSnapEnd
     };
     board = ChessBoard('board', cfg);
-	board.position('8/2pppp2/8/8/8/8/2PPPP2/8 w - - 0 1');
 });
 // console.log(color)
 

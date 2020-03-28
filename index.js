@@ -22,6 +22,14 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
+
+var isAIroom = function(roomId){
+	if(roomId >20 && roomId < 41){
+		return true;
+	} else {
+	return false;
+	}
+}
 io.on('connection', function (socket) {
     // console.log(players);
     var color;
@@ -53,6 +61,36 @@ io.on('connection', function (socket) {
 
         
     });
+	
+	socket.on('joinedAI', function (roomIdString) {
+        // games[roomId] = {}
+		var x = new Boolean("false");
+		var i = 0;
+		roomId = +roomIdString + 0;
+        while(i < 10){
+			if (games[+roomId+i].players == 0) {
+				games[+roomId+i].players = 2;
+				games[+roomId+i].pid[games[+roomId+i].players - 1] = playerId;
+				x = "true";
+				break;
+			}
+			else{
+				i++;
+			}
+		}
+		
+		if(!x){
+			socket.emit('full',-1);
+		}
+		
+        players = games[roomId].players
+        
+        if (players % 2 == 0) color = 'black';
+        else color = 'white';
+
+        socket.emit('player', { playerId, players, color, roomId })
+        // players--;
+    });
 
     socket.on('move', function (msg) {
         socket.broadcast.emit('move', msg);
@@ -67,7 +105,11 @@ io.on('connection', function (socket) {
     socket.on('disconnect', function () {
         for (let i = 0; i < 100; i++) {
             if (games[i].pid[0] == playerId || games[i].pid[1] == playerId)
-                games[i].players--;
+				if(isAIroom(i)){
+					games[i].players = 0;
+				} else {
+					games[i].players--;
+				}
         }
         console.log(playerId + ' disconnected');
 

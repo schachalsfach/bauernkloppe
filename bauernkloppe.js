@@ -40,8 +40,7 @@ var Bauernkloppe = function(fen) {
 
   var SYMBOLS = 'pnbrqkPNBRQK'
 
-  var DEFAULT_POSITION =
-    'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+  var DEFAULT_POSITION = '8/2pppp2/8/8/8/8/2PPPP2/8 w - - 0 1'
 
   var POSSIBLE_RESULTS = ['1-0', '0-1', '1/2-1/2', '*']
 
@@ -771,11 +770,13 @@ var Bauernkloppe = function(fen) {
   function in_stalemate() {
     return !in_check() && generate_moves().length === 0
   }
-
-  function insufficient_material() {
-    var pieces = {}
-    var bishops = []
-    var num_pieces = 0
+  
+  function cantmove(){
+	 return (generate_moves().length === 0)
+  }
+  
+  function hasQueen(){
+	var pieces = {}
     var sq_color = 0
 
     for (var i = SQUARES.a8; i <= SQUARES.h1; i++) {
@@ -788,34 +789,40 @@ var Bauernkloppe = function(fen) {
       var piece = board[i]
       if (piece) {
         pieces[piece.type] = piece.type in pieces ? pieces[piece.type] + 1 : 1
-        if (piece.type === BISHOP) {
-          bishops.push(sq_color)
-        }
-        num_pieces++
       }
     }
+	if(pieces[QUEEN] == 1){
+		return true;
+	} else {
+		return false;
+	}
+  }
 
-    /* k vs. k */
-    if (num_pieces === 2) {
-      return true
-    } else if (
-      /* k vs. kn .... or .... k vs. kb */
-      num_pieces === 3 &&
-      (pieces[BISHOP] === 1 || pieces[KNIGHT] === 1)
-    ) {
-      return true
-    } else if (num_pieces === pieces[BISHOP] + 2) {
-      /* kb vs. kb where any number of bishops are all on the same color */
-      var sum = 0
-      var len = bishops.length
-      for (var i = 0; i < len; i++) {
-        sum += bishops[i]
+  function insufficient_material() {
+    var num_pieces_black = 0
+	var num_pieces_white = 0
+
+    var sq_color = 0
+
+    for (var i = SQUARES.a8; i <= SQUARES.h1; i++) {
+      sq_color = (sq_color + 1) % 2
+      if (i & 0x88) {
+        i += 7
+        continue
       }
-      if (sum === 0 || sum === len) {
-        return true
+      var piece = board[i]
+		
+      if (piece) {
+		if(piece.color == "w"){
+			num_pieces_white++
+		} else {
+			num_pieces_black++
+		}
       }
     }
-
+	if(num_pieces_black == 0 || num_pieces_white == 0 ){
+		return true;
+	}
     return false
   }
 
@@ -1311,12 +1318,13 @@ var Bauernkloppe = function(fen) {
 
     in_draw: function() {
       return (
-        half_moves >= 100 ||
-        in_stalemate() ||
-        insufficient_material() ||
-        in_threefold_repetition()
+        insufficient_material()
       )
     },
+	
+	hasQueen: function(){
+		
+	},
 
     insufficient_material: function() {
       return insufficient_material()
@@ -1327,14 +1335,13 @@ var Bauernkloppe = function(fen) {
     },
 
     game_over: function() {
-      return false;
-	  /*return (
-        half_moves >= 100 ||
-        in_checkmate() ||
-        in_stalemate() ||
+		console.log("insuff: " +  insufficient_material())
+		console.log("hasQueen: " +  hasQueen())
+
+	  return (
         insufficient_material() ||
-        in_threefold_repetition()
-      ) */
+		hasQueen()
+      )
     },
 
     validate_fen: function(fen) {
