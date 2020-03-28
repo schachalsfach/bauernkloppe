@@ -30,6 +30,8 @@ var isAIroom = function(roomId){
 	return false;
 	}
 }
+
+
 io.on('connection', function (socket) {
     // console.log(players);
     var color;
@@ -94,7 +96,6 @@ io.on('connection', function (socket) {
 
     socket.on('move', function (msg) {
         socket.broadcast.emit('move', msg);
-        // console.log(msg);
     });
 
     socket.on('play', function (msg) {

@@ -25,6 +25,15 @@
  *
  *----------------------------------------------------------------------------*/
 
+  var cantmove = function(){
+	  if(generate_moves().length === 0){
+		swap_color(turn);
+		return true;
+	  } else {
+		  return false;
+	  }
+  }
+ 
 var Chess = function(fen) {
   var BLACK = 'b'
   var WHITE = 'w'

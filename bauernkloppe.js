@@ -25,6 +25,7 @@
  *
  *----------------------------------------------------------------------------*/
 
+  
 var Bauernkloppe = function(fen) {
   var BLACK = 'b'
   var WHITE = 'w'
@@ -41,6 +42,7 @@ var Bauernkloppe = function(fen) {
   var SYMBOLS = 'pnbrqkPNBRQK'
 
   var DEFAULT_POSITION = '8/2pppp2/8/8/8/8/2PPPP2/8 w - - 0 1'
+//var DEFAULT_POSITION = '8/4pp2/8/8/8/8/5P2/8 w - - 0 1'
 
   var POSSIBLE_RESULTS = ['1-0', '0-1', '1/2-1/2', '*']
 
@@ -158,6 +160,11 @@ var Bauernkloppe = function(fen) {
   var move_number = 1
   var history = []
   var header = {}
+  
+  
+
+
+  
 
   /* if the user passes in a fen string, load it, else default to
    * starting position
@@ -771,9 +778,9 @@ var Bauernkloppe = function(fen) {
     return !in_check() && generate_moves().length === 0
   }
   
-  function cantmove(){
-	 return (generate_moves().length === 0)
-  }
+
+  
+  
   
   function hasQueen(){
 	var pieces = {}
@@ -947,7 +954,7 @@ var Bauernkloppe = function(fen) {
     }
 
     /* if big pawn move, update the en passant square */
-    if (move.flags & BITS.BIG_PAWN) {
+    /*if (move.flags & BITS.BIG_PAWN) {
       if (turn === 'b') {
         ep_square = move.to - 16
       } else {
@@ -955,7 +962,7 @@ var Bauernkloppe = function(fen) {
       }
     } else {
       ep_square = EMPTY
-    }
+    } */
 
     /* reset the 50 move counter if a pawn is moved or a piece is captured */
     if (move.piece === PAWN) {
@@ -1335,8 +1342,6 @@ var Bauernkloppe = function(fen) {
     },
 
     game_over: function() {
-		console.log("insuff: " +  insufficient_material())
-		console.log("hasQueen: " +  hasQueen())
 
 	  return (
         insufficient_material() ||
@@ -1344,6 +1349,15 @@ var Bauernkloppe = function(fen) {
       )
     },
 
+	cantmove: function(){
+	  if(generate_moves().length === 0){
+		turn = swap_color(turn);
+		return true;
+	  } else {
+		  return false;
+	  }
+	},
+	
     validate_fen: function(fen) {
       return validate_fen(fen)
     },

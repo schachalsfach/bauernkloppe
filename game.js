@@ -22,6 +22,7 @@ var connect = function(){
 	
 	switch(gameId){
 		case "Bauernkloppe" : game = new Bauernkloppe();
+				console.log("Bauernkloppe");
 		break;
 		case "normal":
 		console.log("normales Schach");
@@ -79,11 +80,17 @@ socket.on('move', function (msg) {
     if (msg.room == roomId) {
         game.move(msg.move);
         board.position(game.fen());
-        console.log("moved")
-	if (game.game_over()) {
-        state.innerHTML = 'Spiel beendet';
-        socket.emit('gameOver', roomId)
-    }
+        console.log("moved");
+		
+		if (game.game_over()) {
+			state.innerHTML = 'Spiel beendet';
+			socket.emit('gameOver', roomId);
+		}
+		console.log(game.cantmove());
+		if(game.cantmove()){
+
+		}
+		
     }
 });
 
@@ -160,6 +167,7 @@ var onMouseoutSquare = function (square, piece) {
 
 var onSnapEnd = function () {
     board.position(game.fen());
+	game.cantmove();
 };
 
 
