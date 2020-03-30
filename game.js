@@ -159,20 +159,13 @@ var onDrop = function (source, target) {
         state.innerHTML = 'Spiel beendet';
         socket.emit('gameOver', roomId)
     }
-
-	
-		console.log(roomId);
-			console.log(isAIroom(roomId));
-	
-    // illegal move
     if (move === null) return 'snapback';
     else
-		console.log("moved");
+	
         socket.emit('move', { move: move, board: game.fen(), room: roomId });
 		//legitimer Zug gemacht, jetzt checken ob AI gleich zurueckmoven soll
 		
 	if(isAIroom(roomId) && !game.game_over()){
-		console.log("HALLO WELT");
 		var x = game.generate_moves(JSON.parse('{"legal": true}'));
 		
 		//AI-difficulty

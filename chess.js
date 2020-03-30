@@ -1355,14 +1355,12 @@ var Chess = function(fen) {
     },
 
     game_over: function() {
-      return false;
-	  /*return (
-        half_moves >= 100 ||
+	  return (
         in_checkmate() ||
         in_stalemate() ||
         insufficient_material() ||
         in_threefold_repetition()
-      ) */
+      )
     },
 
     validate_fen: function(fen) {
