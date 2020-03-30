@@ -1326,7 +1326,9 @@ var Chess = function(fen) {
       )
     },
 	
-	
+		move_from_san: function(move, sloppy){
+		return move_from_san(move, sloppy);
+	},
 	
 	generate_moves: function(){
 	  return generate_moves();

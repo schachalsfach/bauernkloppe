@@ -14,6 +14,8 @@ var button = document.getElementById("button")
 var button2 = document.getElementById("button2")
 var state = document.getElementById('state')
 
+var minimaxDepth = 3;
+
 //todo auch in index.js aendern
 var isAIroom = function(roomId){
 	if((roomId >10 && roomId < 21) || (roomId >30 && roomId < 41)){
@@ -59,6 +61,7 @@ var connect = function(){
         button.remove();
 		button2.style = "display:inline;";
 		roomId=+roomId+10;
+		minimaxDepth = 1;
         socket.emit('joinedAI', roomId);
 	} else if (enemyId == "normal"){
 		spielart.remove();
@@ -68,6 +71,7 @@ var connect = function(){
         button.remove();
 		button2.style = "display:inline;";
 		roomId=+roomId+10;
+		minimaxDepth = 2;
         socket.emit('joinedAI', roomId);
 	}
 	 else if (enemyId == "hard"){
@@ -78,6 +82,8 @@ var connect = function(){
         button.remove();
 		button2.style = "display:inline;";
 		roomId=+roomId+10;
+		minimaxDepth = 3;
+		
         socket.emit('joinedAI', roomId);
 	} else {
 		console.log("ERROR ENEMY NOT FOUND");
@@ -114,7 +120,6 @@ socket.on('move', function (msg) {
 			state.innerHTML = 'Spiel beendet';
 			socket.emit('gameOver', roomId);
 		}
-
     }
 });
 
@@ -161,27 +166,37 @@ var onDrop = function (source, target) {
     }
     if (move === null) return 'snapback';
     else
-	
-        socket.emit('move', { move: move, board: game.fen(), room: roomId });
+       
+	if(!isAIroom(roomId)){
+    socket.emit('move', { move: move, board: game.fen(), room: roomId });
 		//legitimer Zug gemacht, jetzt checken ob AI gleich zurueckmoven soll
-		
-	if(isAIroom(roomId) && !game.game_over()){
-		var x = game.generate_moves(JSON.parse('{"legal": true}'));
-		
-		//AI-difficulty
-		var movenr = Math.floor(Math.random() * x.length); 
-		move_neu = x[movenr];
-		move = game.move({
-			from: game.algebraic(move_neu.from),
-			to: game.algebraic(move_neu.to),
-			promotion: 'q' // NOTE: always promote to a queen for example simplicity
-		});
-		console.log(move);
-		socket.emit('move', { move: move, board: game.fen(), room: roomId });
-	} 
-	
-
+	} else {
+        board.position(game.fen());
+		AImove();
+	}
 };
+
+function AImove(){
+			if(!game.cantmove()){
+			var x = game.generate_moves(JSON.parse('{"legal": true}'));
+		
+			//console.log("Hallo Welt");
+			var bestMove = calculateBestMove();
+			console.log(bestMove);
+			//AI-difficulty
+			//var movenr = Math.floor(Math.random() * x.length); 
+			//move_neu = x[movenr];
+		
+			//console.log(game.move_from_san(bestMove));
+			move_neu = game.move_from_san(bestMove)
+		
+			move = game.move({
+				from: game.algebraic(move_neu.from),
+				to: game.algebraic(move_neu.to),
+				promotion: 'q' // NOTE: always promote to a queen for example simplicity
+			});
+		} 
+}
 
 var onMouseoverSquare = function (square, piece) {
     // get list of possible moves for this square
@@ -243,3 +258,220 @@ socket.on('player', (msg) => {
 // console.log(color)
 
 var board;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//stolen from https://github.com/gautambajaj/Chess-AI/blob/master/js/chessAI.js
+
+
+var calculateBestMove = function() {
+	    var possibleNextMoves = game.moves();
+	    var bestMove = -9999;
+	    var bestMoveFound;
+
+	    for(var i = 0; i < possibleNextMoves.length; i++) {
+		//	console.log(i);
+	        var possibleNextMove = possibleNextMoves[i]
+	        game.move(possibleNextMove);
+	        var value = minimax(minimaxDepth, -10000, 10000, false);
+	        game.undo();
+	        if(value >= bestMove) {
+	            bestMove = value;
+	            bestMoveFound = possibleNextMove;
+	        }
+	    }
+	    return bestMoveFound;
+	};
+
+
+	// minimax with alhpha-beta pruning and search depth d = 3 levels
+	var minimax = function (depth, alpha, beta, isMaximisingPlayer) {
+	    if (depth === 0) {
+	        return -evaluateBoard(game.board());
+	    }
+
+	    var possibleNextMoves = game.moves();
+	    var numPossibleMoves = possibleNextMoves.length
+
+	    if (isMaximisingPlayer) {
+	        var bestMove = -9999;
+	        for (var i = 0; i < numPossibleMoves; i++) {
+	            game.move(possibleNextMoves[i]);
+	            bestMove = Math.max(bestMove, minimax(depth - 1, alpha, beta, !isMaximisingPlayer));
+	            game.undo();
+	            alpha = Math.max(alpha, bestMove);
+	            if(beta <= alpha){
+	            	return bestMove;
+	            }
+	        }
+
+	    } else {
+	        var bestMove = 9999;
+	        for (var i = 0; i < numPossibleMoves; i++) {
+	            game.move(possibleNextMoves[i]);
+	            bestMove = Math.min(bestMove, minimax(depth - 1, alpha, beta, !isMaximisingPlayer));
+	            game.undo();
+	            beta = Math.min(beta, bestMove);
+	            if(beta <= alpha){
+	            	return bestMove;
+	            }
+	        }
+	    }
+
+		return bestMove;
+	};
+
+
+	// the evaluation function for minimax
+	var evaluateBoard = function (board) {
+	    var totalEvaluation = 0;
+	    for (var i = 0; i < 8; i++) {
+	        for (var j = 0; j < 8; j++) {
+	            totalEvaluation = totalEvaluation + getPieceValue(board[i][j], i, j);
+	        }
+	    }
+	    return totalEvaluation;
+	};
+
+
+	var reverseArray = function(array) {
+    	return array.slice().reverse();
+	};
+
+	var whitePawnEval =
+	    [
+	        [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
+	        [5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0],
+	        [1.0,  1.0,  2.0,  3.0,  3.0,  2.0,  1.0,  1.0],
+	        [0.5,  0.5,  1.0,  2.5,  2.5,  1.0,  0.5,  0.5],
+	        [0.0,  0.0,  0.0,  2.0,  2.0,  0.0,  0.0,  0.0],
+	        [0.5, -0.5, -1.0,  0.0,  0.0, -1.0, -0.5,  0.5],
+	        [0.5,  1.0,  1.0,  -2.0, -2.0,  1.0,  1.0,  0.5],
+	        [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0]
+	    ];
+
+	var blackPawnEval = reverseArray(whitePawnEval);
+
+	var knightEval =
+	    [
+	        [-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0],
+	        [-4.0, -2.0,  0.0,  0.0,  0.0,  0.0, -2.0, -4.0],
+	        [-3.0,  0.0,  1.0,  1.5,  1.5,  1.0,  0.0, -3.0],
+	        [-3.0,  0.5,  1.5,  2.0,  2.0,  1.5,  0.5, -3.0],
+	        [-3.0,  0.0,  1.5,  2.0,  2.0,  1.5,  0.0, -3.0],
+	        [-3.0,  0.5,  1.0,  1.5,  1.5,  1.0,  0.5, -3.0],
+	        [-4.0, -2.0,  0.0,  0.5,  0.5,  0.0, -2.0, -4.0],
+	        [-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0]
+	    ];
+
+	var whiteBishopEval = [
+	    [ -2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0],
+	    [ -1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0],
+	    [ -1.0,  0.0,  0.5,  1.0,  1.0,  0.5,  0.0, -1.0],
+	    [ -1.0,  0.5,  0.5,  1.0,  1.0,  0.5,  0.5, -1.0],
+	    [ -1.0,  0.0,  1.0,  1.0,  1.0,  1.0,  0.0, -1.0],
+	    [ -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, -1.0],
+	    [ -1.0,  0.5,  0.0,  0.0,  0.0,  0.0,  0.5, -1.0],
+	    [ -2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0]
+	];
+
+	var blackBishopEval = reverseArray(whiteBishopEval);
+
+	var whiteRookEval = [
+	    [  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
+	    [  0.5,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.5],
+	    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+	    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+	    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+	    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+	    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+	    [  0.0,   0.0, 0.0,  0.5,  0.5,  0.0,  0.0,  0.0]
+	];
+
+	var blackRookEval = reverseArray(whiteRookEval);
+
+	var evalQueen = [
+	    [ -2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0],
+	    [ -1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0],
+	    [ -1.0,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -1.0],
+	    [ -0.5,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -0.5],
+	    [  0.0,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -0.5],
+	    [ -1.0,  0.5,  0.5,  0.5,  0.5,  0.5,  0.0, -1.0],
+	    [ -1.0,  0.0,  0.5,  0.0,  0.0,  0.0,  0.0, -1.0],
+	    [ -2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0]
+	];
+
+	var whiteKingEval = [
+
+	    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+	    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+	    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+	    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+	    [ -2.0, -3.0, -3.0, -4.0, -4.0, -3.0, -3.0, -2.0],
+	    [ -1.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -1.0],
+	    [  2.0,  2.0,  0.0,  0.0,  0.0,  0.0,  2.0,  2.0 ],
+	    [  2.0,  3.0,  1.0,  0.0,  0.0,  1.0,  3.0,  2.0 ]
+	];
+
+	var blackKingEval = reverseArray(whiteKingEval);
+
+
+	var getPieceValue = function (piece, x, y) {
+	    if (piece === null) {
+	        return 0;
+	    }
+
+	    var absoluteValue = getAbsoluteValue(piece, piece.color === 'w', x ,y);
+
+	    if(piece.color === 'w'){
+	    	return absoluteValue;
+	    } else {
+	    	return -absoluteValue;
+	    }
+	};
+
+
+	var getAbsoluteValue = function (piece, isWhite, x ,y) {
+        if (piece.type === 'p') {
+            return 10 + ( isWhite ? whitePawnEval[y][x] : blackPawnEval[y][x] );
+        } else if (piece.type === 'r') {
+            return 50 + ( isWhite ? whiteRookEval[y][x] : blackRookEval[y][x] );
+        } else if (piece.type === 'n') {
+            return 30 + knightEval[y][x];
+        } else if (piece.type === 'b') {
+            return 30 + ( isWhite ? whiteBishopEval[y][x] : blackBishopEval[y][x] );
+        } else if (piece.type === 'q') {
+            return 90 + evalQueen[y][x];
+        } else if (piece.type === 'k') {
+            return 900 + ( isWhite ? whiteKingEval[y][x] : blackKingEval[y][x] );
+        }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

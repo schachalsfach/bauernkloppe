@@ -1326,6 +1326,10 @@ var Bauernkloppe = function(fen) {
       )
     },
 	
+	move_from_san: function(move, sloppy){
+		return move_from_san(move, sloppy);
+	},
+	
 	hasQueen: function(){
 		
 	},
@@ -1768,6 +1772,9 @@ var Bauernkloppe = function(fen) {
     }
   }
 }
+
+
+
 
 /* export Bauernkloppe object if using node or any other CommonJS compatible
  * environment */
