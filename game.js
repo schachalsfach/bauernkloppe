@@ -14,6 +14,15 @@ var button = document.getElementById("button")
 var button2 = document.getElementById("button2")
 var state = document.getElementById('state')
 
+//todo auch in index.js aendern
+var isAIroom = function(roomId){
+	if((roomId >10 && roomId < 21) || (roomId >30 && roomId < 41)){
+		return true;
+	} else {
+	return false;
+	}
+}
+
 var connect = function(){
     roomId = room.value;
 	gameId = spielart.value;
@@ -46,12 +55,32 @@ var connect = function(){
 		spielart.remove();
         room.remove();
 		enemy.remove();
-        roomNumber.innerHTML = "Du spielst gegen den Computer";
+        roomNumber.innerHTML = "Du spielst gegen den Computer (leicht)";
         button.remove();
 		button2.style = "display:inline;";
-        socket.emit('joinedAI', +roomId + 10);
+		roomId=+roomId+10;
+        socket.emit('joinedAI', roomId);
+	} else if (enemyId == "normal"){
+		spielart.remove();
+        room.remove();
+		enemy.remove();
+        roomNumber.innerHTML = "Du spielst gegen den Computer (mittel)";
+        button.remove();
+		button2.style = "display:inline;";
+		roomId=+roomId+10;
+        socket.emit('joinedAI', roomId);
+	}
+	 else if (enemyId == "hard"){
+		spielart.remove();
+        room.remove();
+		enemy.remove();
+        roomNumber.innerHTML = "Du spielst gegen den Computer (schwer)";
+        button.remove();
+		button2.style = "display:inline;";
+		roomId=+roomId+10;
+        socket.emit('joinedAI', roomId);
 	} else {
-		
+		console.log("ERROR ENEMY NOT FOUND");
 	}
 
 }
@@ -81,16 +110,11 @@ socket.on('move', function (msg) {
         game.move(msg.move);
         board.position(game.fen());
         console.log("moved");
-		
 		if (game.game_over()) {
 			state.innerHTML = 'Spiel beendet';
 			socket.emit('gameOver', roomId);
 		}
-		console.log(game.cantmove());
-		if(game.cantmove()){
 
-		}
-		
     }
 });
 
@@ -130,15 +154,39 @@ var onDrop = function (source, target) {
         to: target,
         promotion: 'q' // NOTE: always promote to a queen for example simplicity
     });
+	
     if (game.game_over()) {
         state.innerHTML = 'Spiel beendet';
         socket.emit('gameOver', roomId)
     }
 
+	
+		console.log(roomId);
+			console.log(isAIroom(roomId));
+	
     // illegal move
     if (move === null) return 'snapback';
     else
+		console.log("moved");
         socket.emit('move', { move: move, board: game.fen(), room: roomId });
+		//legitimer Zug gemacht, jetzt checken ob AI gleich zurueckmoven soll
+		
+	if(isAIroom(roomId) && !game.game_over()){
+		console.log("HALLO WELT");
+		var x = game.generate_moves(JSON.parse('{"legal": true}'));
+		
+		//AI-difficulty
+		var movenr = Math.floor(Math.random() * x.length); 
+		move_neu = x[movenr];
+		move = game.move({
+			from: game.algebraic(move_neu.from),
+			to: game.algebraic(move_neu.to),
+			promotion: 'q' // NOTE: always promote to a queen for example simplicity
+		});
+		console.log(move);
+		socket.emit('move', { move: move, board: game.fen(), room: roomId });
+	} 
+	
 
 };
 

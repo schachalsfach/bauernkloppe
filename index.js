@@ -22,9 +22,9 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
-
+//Todo auch in game.js aendern
 var isAIroom = function(roomId){
-	if(roomId >20 && roomId < 41){
+	if((roomId >10 && roomId < 21) || (roomId >30 && roomId < 41)){
 		return true;
 	} else {
 	return false;
@@ -87,8 +87,8 @@ io.on('connection', function (socket) {
 		
         players = games[roomId].players
         
-        if (players % 2 == 0) color = 'black';
-        else color = 'white';
+        if (players % 2 == 0) color = 'white';
+        else color = 'black';
 
         socket.emit('player', { playerId, players, color, roomId })
         // players--;

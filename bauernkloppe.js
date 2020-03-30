@@ -525,6 +525,7 @@ var Bauernkloppe = function(fen) {
     var single_square = false
 
     /* do we want legal moves? */
+	//console.log(options);
     var legal =
       typeof options !== 'undefined' && 'legal' in options
         ? options.legal
@@ -1297,11 +1298,7 @@ var Bauernkloppe = function(fen) {
         /* does the user want a full move object (most likely not), or just
          * SAN
          */
-        if (
-          typeof options !== 'undefined' &&
-          'verbose' in options &&
-          options.verbose
-        ) {
+        if (typeof options !== 'undefined' && 'verbose' in options && options.verbose) {
           moves.push(make_pretty(ugly_moves[i]))
         } else {
           moves.push(move_to_san(ugly_moves[i], false))
@@ -1357,6 +1354,25 @@ var Bauernkloppe = function(fen) {
 		  return false;
 	  }
 	},
+	
+	generate_moves: function(){
+	  return generate_moves();
+	},
+	
+	
+	move_to_san: function(move, sloppy){
+	  return move_to_san(move, sloppy);
+	},
+	
+	
+	algebraic: function(i) {
+		return algebraic(i);
+  },
+	
+/*	moves: function(){
+	  return moves();
+	}, */
+	
 	
     validate_fen: function(fen) {
       return validate_fen(fen)

@@ -1325,6 +1325,26 @@ var Chess = function(fen) {
         in_threefold_repetition()
       )
     },
+	
+	
+	
+	generate_moves: function(){
+	  return generate_moves();
+	},
+	
+	
+	move_to_san: function(move, sloppy){
+	  return move_to_san(move, sloppy);
+	},
+	
+	
+	algebraic: function(i) {
+		return algebraic(i);
+	},
+	
+	cantmove: function(){
+		return false;
+	},
 
     insufficient_material: function() {
       return insufficient_material()
