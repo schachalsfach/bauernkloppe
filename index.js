@@ -24,7 +24,7 @@ app.get('/', (req, res) => {
 
 //Todo auch in game.js aendern
 var isAIroom = function(roomId){
-	if((roomId >10 && roomId < 21) || (roomId >30 && roomId < 41)){
+	if((roomId >10 && roomId < 21) || (roomId >30 && roomId < 41) || (roomId >50 && roomId < 61)){
 		return true;
 	} else {
 	return false;

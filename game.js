@@ -18,7 +18,7 @@ var minimaxDepth = 3;
 
 //todo auch in index.js aendern
 var isAIroom = function(roomId){
-	if((roomId >10 && roomId < 21) || (roomId >30 && roomId < 41)){
+	if((roomId >10 && roomId < 21) || (roomId >30 && roomId < 41) || (roomId >50 && roomId < 61)){
 		return true;
 	} else {
 	return false;
@@ -40,6 +40,12 @@ var connect = function(){
 		roomId = +roomId + 20;
 		game = new Chess();
 		break;
+		case "Pferdeapfel":
+		console.log("Pferdeapfel");
+		roomId = +roomId + 40;
+		game = new Pferdeapfel();
+		break;
+		
 		default: console.log("Leer");
 		break;
 	}
@@ -98,7 +104,6 @@ var disconnect = function(){
 
 socket.on('full', function (msg) {
     if(roomId == msg)
-       // window.location.assign(window.location.href+ 'full.html');
 	state.innerHTML = "Dieser Raum ist leider schon voll, bitte wähle einen anderen Raum."
 
 });
@@ -152,7 +157,6 @@ var onDragStart = function (source, piece) {
 
 var onDrop = function (source, target) {
     removeGreySquares();
-
     // see if the move is legal
     var move = game.move({
         from: source,
@@ -166,37 +170,10 @@ var onDrop = function (source, target) {
     }
     if (move === null) return 'snapback';
     else
-       
 	if(!isAIroom(roomId)){
-    socket.emit('move', { move: move, board: game.fen(), room: roomId });
-		//legitimer Zug gemacht, jetzt checken ob AI gleich zurueckmoven soll
-	} else {
-        board.position(game.fen());
-		AImove();
+		socket.emit('move', { move: move, board: game.fen(), room: roomId });
 	}
 };
-
-function AImove(){
-			if(!game.cantmove()){
-			var x = game.generate_moves(JSON.parse('{"legal": true}'));
-		
-			//console.log("Hallo Welt");
-			var bestMove = calculateBestMove();
-			console.log(bestMove);
-			//AI-difficulty
-			//var movenr = Math.floor(Math.random() * x.length); 
-			//move_neu = x[movenr];
-		
-			//console.log(game.move_from_san(bestMove));
-			move_neu = game.move_from_san(bestMove)
-		
-			move = game.move({
-				from: game.algebraic(move_neu.from),
-				to: game.algebraic(move_neu.to),
-				promotion: 'q' // NOTE: always promote to a queen for example simplicity
-			});
-		} 
-}
 
 var onMouseoverSquare = function (square, piece) {
     // get list of possible moves for this square
@@ -224,6 +201,9 @@ var onMouseoutSquare = function (square, piece) {
 var onSnapEnd = function () {
     board.position(game.fen());
 	game.cantmove();
+	if(isAIroom(roomId)){
+		AImove();
+	}
 };
 
 
@@ -255,7 +235,6 @@ socket.on('player', (msg) => {
     };
     board = ChessBoard('board', cfg);
 });
-// console.log(color)
 
 var board;
 
@@ -264,19 +243,39 @@ var board;
 
 
 
+function AImove(){
+			if(!game.cantmove()){
+			var x = game.generate_moves(JSON.parse('{"legal": true}'));
+		
+			//console.log("Hallo Welt");
+			var bestMove = calculateBestMove();
+			//console.log(bestMove);
+			//AI-difficulty
+			//var movenr = Math.floor(Math.random() * x.length); 
+			//move_neu = x[movenr];
 
-
-
-
-
-
-
-
+			move_neu = game.move_from_san(bestMove)
+		
+			game.move({
+				from: game.algebraic(move_neu.from),
+				to: game.algebraic(move_neu.to),
+				promotion: 'q' // NOTE: always promote to a queen for example simplicity
+			});
+			 board.position(game.fen());
+		} 
+}
 
 //stolen from https://github.com/gautambajaj/Chess-AI/blob/master/js/chessAI.js
 
 
 var calculateBestMove = function() {
+	
+	if(game.type == "Pferdeapfel"){
+		var possibleNextMoves = game.moves();
+		return possibleNextMoves[Math.floor(Math.random() * possibleNextMoves.length)];
+	} else {
+		//console.log("TSCH");
+	}
 	    var possibleNextMoves = game.moves();
 	    var bestMove = -9999;
 	    var bestMoveFound;

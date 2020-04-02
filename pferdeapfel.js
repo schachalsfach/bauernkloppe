@@ -24,12 +24,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  *----------------------------------------------------------------------------*/
-var type = 'Bauernkloppe';
+var type = 'Pferdeapfel'
   
-var Bauernkloppe = function(fen) {
+var Pferdeapfel = function(fen) {
+
   var BLACK = 'b'
   var WHITE = 'w'
-
   var EMPTY = -1
 
   var PAWN = 'p'
@@ -39,10 +39,10 @@ var Bauernkloppe = function(fen) {
   var QUEEN = 'q'
   var KING = 'k'
 
+
   var SYMBOLS = 'pnbrqkPNBRQK'
 
-  var DEFAULT_POSITION = '8/2pppp2/8/8/8/8/2PPPP2/8 w - - 0 1'
-//var DEFAULT_POSITION = '8/4pp2/8/8/8/8/5P2/8 w - - 0 1'
+  var DEFAULT_POSITION = '7n/8/8/8/8/8/8/N7 w - - 0 1'
 
   var POSSIBLE_RESULTS = ['1-0', '0-1', '1/2-1/2', '*']
 
@@ -206,9 +206,10 @@ var Bauernkloppe = function(fen) {
     var square = 0
 
     if (!validate_fen(fen).valid) {
+		console.log("not valid");
+		console.log(validate_fen(fen));
       return false
     }
-
     clear(keep_headers)
 
     for (var i = 0; i < position.length; i++) {
@@ -553,7 +554,7 @@ var Bauernkloppe = function(fen) {
       if (piece == null || piece.color !== us) {
         continue
       }
-
+		//console.log(piece.type);
       if (piece.type === PAWN) {
         /* single square, non-capturing */
         var square = i + PAWN_OFFSETS[us][0]
@@ -1121,7 +1122,7 @@ var Bauernkloppe = function(fen) {
     // this should parse invalid SAN like: Pe2-e4, Rc1c4, Qf3xf7
     if (sloppy) {
       var matches = clean_move.match(
-        /([pnbrqkPNBRQK])?([a-h][1-8])x?-?([a-h][1-8])([qrbnQRBN])?/
+        /([pnbrqkmPNBRQKM])?([a-h][1-8])x?-?([a-h][1-8])([qrbnmQRBNM])?/
       )
       if (matches) {
         var piece = matches[1]
@@ -1776,11 +1777,11 @@ var Bauernkloppe = function(fen) {
 
 
 
-/* export Bauernkloppe object if using node or any other CommonJS compatible
+/* export Pferdeapfel object if using node or any other CommonJS compatible
  * environment */
-if (typeof exports !== 'undefined') exports.Bauernkloppe = Bauernkloppe
-/* export Bauernkloppe object for any RequireJS compatible environment */
+if (typeof exports !== 'undefined') exports.Pferdeapfel = Pferdeapfel
+/* export Pferdeapfel object for any RequireJS compatible environment */
 if (typeof define !== 'undefined')
   define(function() {
-    return Bauernkloppe
+    return Pferdeapfel
   })

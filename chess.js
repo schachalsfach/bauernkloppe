@@ -24,6 +24,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  *----------------------------------------------------------------------------*/
+var type = 'normal';
 
   var cantmove = function(){
 	  if(generate_moves().length === 0){
