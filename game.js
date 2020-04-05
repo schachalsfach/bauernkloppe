@@ -22,24 +22,14 @@ var ea = 1;
 var no = 2;
 var ha = 3;
 
-//todo auch in index.js aendern
-var isAIroom = function(roomId){
-	if((roomId >10 && roomId < 21) || (roomId >30 && roomId < 41) || (roomId >50 && roomId < 61)){
-		return true;
-	} else {
-	return false;
-	}
-}
 
 var connect = function(){
     roomId = room.value;
 	gameId = spielart.value;
 	enemyId = enemy.value;
-	
-	
 	switch(gameId){
 		case "Bauernkloppe" : game = new Bauernkloppe();
-				console.log("Bauernkloppe");
+		console.log("Bauernkloppe");
 		break;
 		case "normal":
 		console.log("normales Schach");
@@ -53,11 +43,15 @@ var connect = function(){
 		pieThe = 'img/chesspieces/markerstattbauern/{piece}.png'
 		break;
 		
+		case "damegegenacht" :
+		roomId = +roomId + 60;
+		game = new Damegegenacht();
+		console.log("Dame gegen Acht");
+		break;
+		
 		default: console.log("Leer");
 		break;
 	}
-
-	
     if (enemyId == "freund") {
 		spielart.remove();
         room.remove();
@@ -73,9 +67,9 @@ var connect = function(){
         roomNumber.innerHTML = "Du spielst gegen den Computer (leicht)";
         button.remove();
 		button2.style = "display:inline;";
-		roomId=+roomId+10;
 		minimaxDepth = ea;
-        socket.emit('joinedAI', roomId);
+		roomId = 9999;
+		initAIgame();
 	} else if (enemyId == "normal"){
 		spielart.remove();
         room.remove();
@@ -83,9 +77,9 @@ var connect = function(){
         roomNumber.innerHTML = "Du spielst gegen den Computer (mittel)";
         button.remove();
 		button2.style = "display:inline;";
-		roomId=+roomId+10;
 		minimaxDepth = no;
-        socket.emit('joinedAI', roomId);
+		roomId = 9999;
+		initAIgame();
 	}
 	 else if (enemyId == "hard"){
 		spielart.remove();
@@ -94,18 +88,37 @@ var connect = function(){
         roomNumber.innerHTML = "Du spielst gegen den Computer (schwer)";
         button.remove();
 		button2.style = "display:inline;";
-		roomId=+roomId+10;
 		minimaxDepth = ha;
-        socket.emit('joinedAI', roomId);
+		roomId = 9999;
+		initAIgame();
 	} else {
 		console.log("ERROR ENEMY NOT FOUND");
 	}
+}
 
+var initAIgame = function(){
+    play = false;
+    state.innerHTML = "Spiel läuft gerade"
+    var cfg = {
+        orientation: color,
+        draggable: true,
+        position: game.fen(),
+        onDragStart: onDragStart,
+        onDrop: onDrop,
+        onMouseoutSquare: onMouseoutSquare,
+        onMouseoverSquare: onMouseoverSquare,
+        onSnapEnd: onSnapEnd,
+		pieceTheme: pieThe
+    };
+    board = ChessBoard('board', cfg);	
+	
 }
 
 var disconnect = function(){
 		button2.style="display:none;";
-        socket.emit('disconnect');
+        if(roomId != 9999){
+			socket.emit('disconnect');
+		}
 }
 
 socket.on('full', function (msg) {
@@ -176,9 +189,8 @@ var onDrop = function (source, target) {
     }
     if (move === null) return 'snapback';
     else
-	if(!isAIroom(roomId)){
-		socket.emit('move', { move: move, board: game.fen(), room: roomId });
-	}
+	
+	socket.emit('move', { move: move, board: game.fen(), room: roomId });
 };
 
 var onMouseoverSquare = function (square, piece) {
@@ -207,7 +219,7 @@ var onMouseoutSquare = function (square, piece) {
 var onSnapEnd = function () {
     board.position(game.fen());
 	game.cantmove();
-	if(isAIroom(roomId)){
+	if(roomId == 9999){
 		AImove(game.type);
 	}
 };
@@ -384,13 +396,16 @@ function AImove(){
 			case 'Pferdeapfel':
 				AIpferdeapfel(game.spie);
 			break;
-			
-			case 'Bauernkloppe':
-				AIdefault();
+			case 'Bauernkloppe': 
+				AIdefault(); //TODO
 			break;
 			
 			case 'normal':
-				AIdefault();
+				AIdefault(); //TODO
+			break;
+			
+			case 'damegegenacht':
+				AIdefault(); //TODO
 			break;
 			
 			default:

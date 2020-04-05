@@ -25,12 +25,11 @@
  *
  *----------------------------------------------------------------------------*/
 var type = 'normal';
-
+var spie = 'undefined';
  
 var Chess = function(fen) {
   var BLACK = 'b'
   var WHITE = 'w'
-
   var EMPTY = -1
 
   var PAWN = 'p'

@@ -24,12 +24,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  *----------------------------------------------------------------------------*/
-var type = 'Bauernkloppe';
-  
-var Bauernkloppe = function(fen) {
+var type = 'damegegenacht';
+var spie = 'undefined';
+ 
+var Damegegenacht = function(fen) {
   var BLACK = 'b'
   var WHITE = 'w'
-
   var EMPTY = -1
 
   var PAWN = 'p'
@@ -38,12 +38,10 @@ var Bauernkloppe = function(fen) {
   var ROOK = 'r'
   var QUEEN = 'q'
   var KING = 'k'
-  var type = 'Bauernkloppe';
-  var spie = 'undefined'
+
   var SYMBOLS = 'pnbrqkPNBRQK'
 
-  var DEFAULT_POSITION = '8/2pppp2/8/8/8/8/2PPPP2/8 w - - 0 1'
-//var DEFAULT_POSITION = '8/4pp2/8/8/8/8/5P2/8 w - - 0 1'
+  var DEFAULT_POSITION = '4q3/8/8/8/8/8/PPPPPPPP/8 w KQkq - 0 1'
 
   var POSSIBLE_RESULTS = ['1-0', '0-1', '1/2-1/2', '*']
 
@@ -161,11 +159,6 @@ var Bauernkloppe = function(fen) {
   var move_number = 1
   var history = []
   var header = {}
-  
-  
-
-
-  
 
   /* if the user passes in a fen string, load it, else default to
    * starting position
@@ -526,7 +519,6 @@ var Bauernkloppe = function(fen) {
     var single_square = false
 
     /* do we want legal moves? */
-	//console.log(options);
     var legal =
       typeof options !== 'undefined' && 'legal' in options
         ? options.legal
@@ -606,40 +598,6 @@ var Bauernkloppe = function(fen) {
     /* check for castling if: a) we're generating all moves, or b) we're doing
      * single square move generation on the king's square
      */
-    if (!single_square || last_sq === kings[us]) {
-      /* king-side castling */
-      if (castling[us] & BITS.KSIDE_CASTLE) {
-        var castling_from = kings[us]
-        var castling_to = castling_from + 2
-
-        if (
-          board[castling_from + 1] == null &&
-          board[castling_to] == null &&
-          !attacked(them, kings[us]) &&
-          !attacked(them, castling_from + 1) &&
-          !attacked(them, castling_to)
-        ) {
-          add_move(board, moves, kings[us], castling_to, BITS.KSIDE_CASTLE)
-        }
-      }
-
-      /* queen-side castling */
-      if (castling[us] & BITS.QSIDE_CASTLE) {
-        var castling_from = kings[us]
-        var castling_to = castling_from - 2
-
-        if (
-          board[castling_from - 1] == null &&
-          board[castling_from - 2] == null &&
-          board[castling_from - 3] == null &&
-          !attacked(them, kings[us]) &&
-          !attacked(them, castling_from - 1) &&
-          !attacked(them, castling_to)
-        ) {
-          add_move(board, moves, kings[us], castling_to, BITS.QSIDE_CASTLE)
-        }
-      }
-    }
 
     /* return all pseudo-legal moves (this includes moves that allow the king
      * to be captured)
@@ -765,7 +723,7 @@ var Bauernkloppe = function(fen) {
   }
 
   function king_attacked(color) {
-    return attacked(swap_color(color), kings[color])
+    return false;
   }
 
   function in_check() {
@@ -779,13 +737,11 @@ var Bauernkloppe = function(fen) {
   function in_stalemate() {
     return !in_check() && generate_moves().length === 0
   }
-  
 
-  
-  
-  
-  function hasQueen(){
-	var pieces = {}
+  function insufficient_material() {
+    var pieces = {}
+    var bishops = []
+    var num_pieces = 0
     var sq_color = 0
 
     for (var i = SQUARES.a8; i <= SQUARES.h1; i++) {
@@ -798,40 +754,34 @@ var Bauernkloppe = function(fen) {
       var piece = board[i]
       if (piece) {
         pieces[piece.type] = piece.type in pieces ? pieces[piece.type] + 1 : 1
+        if (piece.type === BISHOP) {
+          bishops.push(sq_color)
+        }
+        num_pieces++
       }
     }
-	if(pieces[QUEEN] == 1){
-		return true;
-	} else {
-		return false;
-	}
-  }
 
-  function insufficient_material() {
-    var num_pieces_black = 0
-	var num_pieces_white = 0
-
-    var sq_color = 0
-
-    for (var i = SQUARES.a8; i <= SQUARES.h1; i++) {
-      sq_color = (sq_color + 1) % 2
-      if (i & 0x88) {
-        i += 7
-        continue
+    /* k vs. k */
+    if (num_pieces === 2) {
+      return true
+    } else if (
+      /* k vs. kn .... or .... k vs. kb */
+      num_pieces === 3 &&
+      (pieces[BISHOP] === 1 || pieces[KNIGHT] === 1)
+    ) {
+      return true
+    } else if (num_pieces === pieces[BISHOP] + 2) {
+      /* kb vs. kb where any number of bishops are all on the same color */
+      var sum = 0
+      var len = bishops.length
+      for (var i = 0; i < len; i++) {
+        sum += bishops[i]
       }
-      var piece = board[i]
-		
-      if (piece) {
-		if(piece.color == "w"){
-			num_pieces_white++
-		} else {
-			num_pieces_black++
-		}
+      if (sum === 0 || sum === len) {
+        return true
       }
     }
-	if(num_pieces_black == 0 || num_pieces_white == 0 ){
-		return true;
-	}
+
     return false
   }
 
@@ -956,7 +906,7 @@ var Bauernkloppe = function(fen) {
     }
 
     /* if big pawn move, update the en passant square */
-    /*if (move.flags & BITS.BIG_PAWN) {
+    if (move.flags & BITS.BIG_PAWN) {
       if (turn === 'b') {
         ep_square = move.to - 16
       } else {
@@ -964,7 +914,7 @@ var Bauernkloppe = function(fen) {
       }
     } else {
       ep_square = EMPTY
-    } */
+    }
 
     /* reset the 50 move counter if a pawn is moved or a piece is captured */
     if (move.piece === PAWN) {
@@ -1301,7 +1251,11 @@ var Bauernkloppe = function(fen) {
         /* does the user want a full move object (most likely not), or just
          * SAN
          */
-        if (typeof options !== 'undefined' && 'verbose' in options && options.verbose) {
+        if (
+          typeof options !== 'undefined' &&
+          'verbose' in options &&
+          options.verbose
+        ) {
           moves.push(make_pretty(ugly_moves[i]))
         } else {
           moves.push(move_to_san(ugly_moves[i], false))
@@ -1325,41 +1279,15 @@ var Bauernkloppe = function(fen) {
 
     in_draw: function() {
       return (
-        insufficient_material()
-      )
-    },
-	
-	move_from_san: function(move, sloppy){
-		return move_from_san(move, sloppy);
-	},
-	
-	hasQueen: function(){
-		
-	},
-
-    insufficient_material: function() {
-      return insufficient_material()
-    },
-
-    in_threefold_repetition: function() {
-      return in_threefold_repetition()
-    },
-
-    game_over: function() {
-
-	  return (
+        half_moves >= 100 ||
+        in_stalemate() ||
         insufficient_material() ||
-		hasQueen()
+        in_threefold_repetition()
       )
     },
-
-	cantmove: function(){
-	  if(generate_moves().length === 0){
-		turn = swap_color(turn);
-		return true;
-	  } else {
-		  return false;
-	  }
+	
+		move_from_san: function(move, sloppy){
+		return move_from_san(move, sloppy);
 	},
 	
 	generate_moves: function(){
@@ -1374,13 +1302,44 @@ var Bauernkloppe = function(fen) {
 	
 	algebraic: function(i) {
 		return algebraic(i);
-  },
+	},
 	
-/*	moves: function(){
-	  return moves();
-	}, */
-	
-	
+	cantmove: function(){
+		return false;
+	},
+
+    insufficient_material: function() {
+      return insufficient_material()
+    },
+
+    in_threefold_repetition: function() {
+      return in_threefold_repetition()
+    },
+
+    game_over: function() {
+	var haspawn = 0;		
+		
+	var pieces = {}
+    var sq_color = 0
+
+    for (var i = SQUARES.a8; i <= SQUARES.h1; i++) {
+      sq_color = (sq_color + 1) % 2
+      if (i & 0x88) {
+        i += 7
+        continue
+      }
+      var piece = board[i]
+	  if(piece && piece != 'undefined'){ 
+		if(piece.type == "p"){
+		 haspawn = 1; 
+		} else if(piece.type == "q" && piece.color == "w"){
+		  return true;
+		}
+	  }
+    }
+	  return (haspawn == 0);
+    },
+
     validate_fen: function(fen) {
       return validate_fen(fen)
     },
@@ -1776,14 +1735,11 @@ var Bauernkloppe = function(fen) {
   }
 }
 
-
-
-
-/* export Bauernkloppe object if using node or any other CommonJS compatible
+/* export Chess object if using node or any other CommonJS compatible
  * environment */
-if (typeof exports !== 'undefined') exports.Bauernkloppe = Bauernkloppe
-/* export Bauernkloppe object for any RequireJS compatible environment */
+if (typeof exports !== 'undefined') exports.Damegegenacht = Damegegenacht
+/* export Chess object for any RequireJS compatible environment */
 if (typeof define !== 'undefined')
   define(function() {
-    return Bauernkloppe
+    return Damegegenacht
   })

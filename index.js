@@ -22,14 +22,6 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
-//Todo auch in game.js aendern
-var isAIroom = function(roomId){
-	if((roomId >10 && roomId < 21) || (roomId >30 && roomId < 41) || (roomId >50 && roomId < 61)){
-		return true;
-	} else {
-	return false;
-	}
-}
 
 
 io.on('connection', function (socket) {
@@ -91,7 +83,6 @@ io.on('connection', function (socket) {
         else color = 'black';
 
         socket.emit('player', { playerId, players, color, roomId })
-        // players--;
     });
 
     socket.on('move', function (msg) {
@@ -106,11 +97,7 @@ io.on('connection', function (socket) {
     socket.on('disconnect', function () {
         for (let i = 0; i < 100; i++) {
             if (games[i].pid[0] == playerId || games[i].pid[1] == playerId)
-				if(isAIroom(i)){
-					games[i].players = 0;
-				} else {
 					games[i].players--;
-				}
         }
         console.log(playerId + ' disconnected');
 

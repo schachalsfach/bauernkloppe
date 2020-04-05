@@ -13,9 +13,12 @@
   integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
     crossorigin="anonymous"></script>
     
+
   <script src="bauernkloppe.js"></script>
     <script src="pferdeapfel.js"></script>
   <script src="chess.js"></script>
+<script src="damegegenacht.js"></script>
+
 
   <script src="./chessboard/js/chessboard-0.3.0.js"></script>
   <link rel="stylesheet" href="./chessboard/css/chessboard-0.3.0.css">
@@ -64,12 +67,22 @@
 <td style="width: 250px;">Wie in "Fritz und Fertig" - 4 Bauern gegen 4 Bauern. En passant deaktiviert, wenn einer nicht mehr ziehen kann darf der andere weiterspielen.</td>
 </tr>
 <tr>
+</tr>
+<tr>
 <td style="width: 274px;">Normales Schach</td>
 <td style="width: 250px;">Normales Schach mit allen Regeln</td>
 </tr>
 <tr>
+</tr>
+<tr>
 <td style="width: 274px;">Pferdeapfelspiel</td>
 <td style="width: 250px;">Nach jedem Zug hinterlassen die Springer einen Pferdeapfel auf dem Feld auf dem sie standen. Hier darf nun kein anderes Pferd mehr darauf hüpfen. Gewonnen hat, wer zuletzt noch springen kann.</td>
+</tr>
+<tr>
+</tr>
+<tr>
+<td style="width: 274px;">Dame gegen 8 Bauern</td>
+<td style="width: 250px;">Die Dame muss alle Bauern schlagen, die Bauern müssen versuchen eine Dame zu werden.</td>
 </tr>
 <tr>
 
@@ -92,6 +105,7 @@
 					<option value="Bauernkloppe">Bauernkloppe</option>
 					<option value="normal">Normales Schach</option>
 					<option value="Pferdeapfel">Pferdeapfelspiel</option>
+					<option value="damegegenacht">Dame gegen 8 Bauern</option>
 					<option value="Rundreise">Rundreise Läufer+Turm</option>
 					<option value="Springerparcours">Springerparcours</option>
 					<option value="Sumoringer">Sumoringer</option>
@@ -131,7 +145,7 @@
             </div>
 			
             <div class="col">
-              <button id="button" class="btn btn-success" onclick="connect()">Verbinden</button>
+              <button id="button" class="btn btn-success" onclick="connect()">Starten</button>
             </div>
 			<div class="col">
               <button id="button2" class="btn btn-danger" onclick="disconnect()" style="display:none;">Spiel verlassen</button>
