@@ -24,9 +24,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  *----------------------------------------------------------------------------*/
-var type = 'Pferdeapfel'
-  
-var Pferdeapfel = function(fen) {
+
+var Pferdeapfel = function(spielstaerke) {
+var type = 'Pferdeapfel';
+var spie = 'none';
 
   var BLACK = 'b'
   var WHITE = 'w'
@@ -169,10 +170,19 @@ var Pferdeapfel = function(fen) {
   /* if the user passes in a fen string, load it, else default to
    * starting position
    */
-  if (typeof fen === 'undefined') {
+   
+  spie = spielstaerke;
+  if (typeof spielstaerke === 'undefined' || spielstaerke == "freund" || spielstaerke == "easy") {
     load(DEFAULT_POSITION)
-  } else {
-    load(fen)
+  } else if (spielstaerke == "normal") {
+	load('n6n/8/8/8/8/8/8/N7 w - - 0 1');
+  } else if (spielstaerke == "hard"){
+	load('n6n/8/8/8/8/8/8/n6N w - - 0 1');
+  }
+  else {
+	 console.log("error spielstaerke in pferdeapfel not found");
+	 console.log(spielstaerke);
+	 load(DEFAULT_POSITION)
   }
 
   function clear(keep_headers) {
@@ -502,18 +512,7 @@ var Pferdeapfel = function(fen) {
 
   function generate_moves(options) {
     function add_move(board, moves, from, to, flags) {
-      /* if pawn promotion */
-      if (
-        board[from].type === PAWN &&
-        (rank(to) === RANK_8 || rank(to) === RANK_1)
-      ) {
-        var pieces = [QUEEN, ROOK, BISHOP, KNIGHT]
-        for (var i = 0, len = pieces.length; i < len; i++) {
-          moves.push(build_move(board, from, to, flags, pieces[i]))
-        }
-      } else {
-        moves.push(build_move(board, from, to, flags))
-      }
+      moves.push(build_move(board, from, to, flags))
     }
 
     var moves = []
@@ -555,20 +554,20 @@ var Pferdeapfel = function(fen) {
         continue
       }
 		//console.log(piece.type);
-      if (piece.type === PAWN) {
+      if (piece.type === PAWN || piece.TYPE == KING) {
         /* single square, non-capturing */
-        var square = i + PAWN_OFFSETS[us][0]
+      /*  var square = i + PAWN_OFFSETS[us][0]
         if (board[square] == null) {
           add_move(board, moves, i, square, BITS.NORMAL)
 
-          /* double square */
+          // double square 
           var square = i + PAWN_OFFSETS[us][1]
           if (second_rank[us] === rank(i) && board[square] == null) {
             add_move(board, moves, i, square, BITS.BIG_PAWN)
           }
         }
 
-        /* pawn captures */
+        // pawn captures 
         for (j = 2; j < 4; j++) {
           var square = i + PAWN_OFFSETS[us][j]
           if (square & 0x88) continue
@@ -579,6 +578,8 @@ var Pferdeapfel = function(fen) {
             add_move(board, moves, i, ep_square, BITS.EP_CAPTURE)
           }
         }
+		
+		*/
       } else {
         for (var j = 0, len = PIECE_OFFSETS[piece.type].length; j < len; j++) {
           var offset = PIECE_OFFSETS[piece.type][j]
@@ -592,7 +593,8 @@ var Pferdeapfel = function(fen) {
               add_move(board, moves, i, square, BITS.NORMAL)
             } else {
               if (board[square].color === us) break
-              add_move(board, moves, i, square, BITS.CAPTURE)
+			  //captureverbot in pferdeapfel
+              //add_move(board, moves, i, square, BITS.CAPTURE)
               break
             }
 
@@ -606,59 +608,10 @@ var Pferdeapfel = function(fen) {
     /* check for castling if: a) we're generating all moves, or b) we're doing
      * single square move generation on the king's square
      */
-    if (!single_square || last_sq === kings[us]) {
-      /* king-side castling */
-      if (castling[us] & BITS.KSIDE_CASTLE) {
-        var castling_from = kings[us]
-        var castling_to = castling_from + 2
-
-        if (
-          board[castling_from + 1] == null &&
-          board[castling_to] == null &&
-          !attacked(them, kings[us]) &&
-          !attacked(them, castling_from + 1) &&
-          !attacked(them, castling_to)
-        ) {
-          add_move(board, moves, kings[us], castling_to, BITS.KSIDE_CASTLE)
-        }
-      }
-
-      /* queen-side castling */
-      if (castling[us] & BITS.QSIDE_CASTLE) {
-        var castling_from = kings[us]
-        var castling_to = castling_from - 2
-
-        if (
-          board[castling_from - 1] == null &&
-          board[castling_from - 2] == null &&
-          board[castling_from - 3] == null &&
-          !attacked(them, kings[us]) &&
-          !attacked(them, castling_from - 1) &&
-          !attacked(them, castling_to)
-        ) {
-          add_move(board, moves, kings[us], castling_to, BITS.QSIDE_CASTLE)
-        }
-      }
-    }
-
     /* return all pseudo-legal moves (this includes moves that allow the king
      * to be captured)
      */
-    if (!legal) {
       return moves
-    }
-
-    /* filter out illegal moves */
-    var legal_moves = []
-    for (var i = 0, len = moves.length; i < len; i++) {
-      make_move(moves[i])
-      if (!king_attacked(us)) {
-        legal_moves.push(moves[i])
-      }
-      undo_move()
-    }
-
-    return legal_moves
   }
 
   /* convert a move from 0x88 coordinates to Standard Algebraic Notation
@@ -890,44 +843,44 @@ var Pferdeapfel = function(fen) {
     var us = turn
     var them = swap_color(us)
     push(move)
-
     board[move.to] = board[move.from]
-    board[move.from] = null
+	//pferdeapfel TODO
+    board[move.from] = { type: PAWN, color: us }
 
-    /* if ep capture, remove the captured pawn */
-    if (move.flags & BITS.EP_CAPTURE) {
+/* if ep capture, remove the captured pawn */
+/*    if (move.flags & BITS.EP_CAPTURE) {
       if (turn === BLACK) {
         board[move.to - 16] = null
       } else {
         board[move.to + 16] = null
       }
-    }
+    } */
 
     /* if pawn promotion, replace with new piece */
-    if (move.flags & BITS.PROMOTION) {
-      board[move.to] = { type: move.promotion, color: us }
-    }
+  //  if (move.flags & BITS.PROMOTION) {
+  //    board[move.to] = { type: move.promotion, color: us }
+  //  }
 
     /* if we moved the king */
-    if (board[move.to].type === KING) {
-      kings[board[move.to].color] = move.to
+   // if (board[move.to].type === KING) {
+   //   kings[board[move.to].color] = move.to
 
       /* if we castled, move the rook next to the king */
-      if (move.flags & BITS.KSIDE_CASTLE) {
-        var castling_to = move.to - 1
-        var castling_from = move.to + 1
-        board[castling_to] = board[castling_from]
-        board[castling_from] = null
-      } else if (move.flags & BITS.QSIDE_CASTLE) {
-        var castling_to = move.to + 1
-        var castling_from = move.to - 2
-        board[castling_to] = board[castling_from]
-        board[castling_from] = null
-      }
+     // if (move.flags & BITS.KSIDE_CASTLE) {
+    //    var castling_to = move.to - 1
+    //    var castling_from = move.to + 1
+    //    board[castling_to] = board[castling_from]
+    //    board[castling_from] = null
+    //  } else if (move.flags & BITS.QSIDE_CASTLE) {
+    //    var castling_to = move.to + 1
+     //   var castling_from = move.to - 2
+    //    board[castling_to] = board[castling_from]
+      //  board[castling_from] = null
+     // }
 
       /* turn off castling */
-      castling[us] = ''
-    }
+     // castling[us] = ''
+    //}
 
     /* turn off castling if we move a rook */
     if (castling[us]) {
@@ -1255,6 +1208,8 @@ var Pferdeapfel = function(fen) {
     ROOK: ROOK,
     QUEEN: QUEEN,
     KING: KING,
+	type: type,
+	spie: spie,
     SQUARES: (function() {
       /* from the ECMA-262 spec (section 12.6.4):
        * "The mechanics of enumerating the properties ... is
@@ -1308,23 +1263,26 @@ var Pferdeapfel = function(fen) {
 
       return moves
     },
+	
+	swapcolor: function() {
+		turn = swap_color(turn);
+	},
 
     in_check: function() {
-      return in_check()
+      return false;
     },
 
     in_checkmate: function() {
-      return in_checkmate()
+      return false;
     },
 
     in_stalemate: function() {
-      return in_stalemate()
+      return false;
     },
 
     in_draw: function() {
-      return (
-        insufficient_material()
-      )
+      return false;
+      
     },
 	
 	move_from_san: function(move, sloppy){
@@ -1332,28 +1290,29 @@ var Pferdeapfel = function(fen) {
 	},
 	
 	hasQueen: function(){
-		
+		return false;
 	},
 
     insufficient_material: function() {
-      return insufficient_material()
+      return false;
     },
 
     in_threefold_repetition: function() {
-      return in_threefold_repetition()
+      return false;
     },
 
     game_over: function() {
-
-	  return (
-        insufficient_material() ||
-		hasQueen()
-      )
+	  if(generate_moves().length === 0){
+		//turn = swap_color(turn);
+		return true;
+	  } else {
+		  return false;
+	  }
     },
 
 	cantmove: function(){
 	  if(generate_moves().length === 0){
-		turn = swap_color(turn);
+		//turn = swap_color(turn);
 		return true;
 	  } else {
 		  return false;

@@ -26,14 +26,6 @@
  *----------------------------------------------------------------------------*/
 var type = 'normal';
 
-  var cantmove = function(){
-	  if(generate_moves().length === 0){
-		swap_color(turn);
-		return true;
-	  } else {
-		  return false;
-	  }
-  }
  
 var Chess = function(fen) {
   var BLACK = 'b'
@@ -1248,6 +1240,8 @@ var Chess = function(fen) {
     ROOK: ROOK,
     QUEEN: QUEEN,
     KING: KING,
+	type: type,
+	spie: spie,
     SQUARES: (function() {
       /* from the ECMA-262 spec (section 12.6.4):
        * "The mechanics of enumerating the properties ... is

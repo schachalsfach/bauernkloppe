@@ -38,7 +38,7 @@ var Bauernkloppe = function(fen) {
   var ROOK = 'r'
   var QUEEN = 'q'
   var KING = 'k'
-
+var spie = 'undefined'
   var SYMBOLS = 'pnbrqkPNBRQK'
 
   var DEFAULT_POSITION = '8/2pppp2/8/8/8/8/2PPPP2/8 w - - 0 1'
@@ -1254,6 +1254,8 @@ var Bauernkloppe = function(fen) {
     ROOK: ROOK,
     QUEEN: QUEEN,
     KING: KING,
+	type: type,
+	spie: spie,
     SQUARES: (function() {
       /* from the ECMA-262 spec (section 12.6.4):
        * "The mechanics of enumerating the properties ... is

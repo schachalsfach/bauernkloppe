@@ -15,6 +15,12 @@ var button2 = document.getElementById("button2")
 var state = document.getElementById('state')
 
 var minimaxDepth = 3;
+var pieThe = 'img/chesspieces/wikipedia/{piece}.png';
+
+var staerke;
+var ea = 1;
+var no = 2;
+var ha = 3;
 
 //todo auch in index.js aendern
 var isAIroom = function(roomId){
@@ -43,7 +49,8 @@ var connect = function(){
 		case "Pferdeapfel":
 		console.log("Pferdeapfel");
 		roomId = +roomId + 40;
-		game = new Pferdeapfel();
+		game = new Pferdeapfel(enemyId);
+		pieThe = 'img/chesspieces/markerstattbauern/{piece}.png'
 		break;
 		
 		default: console.log("Leer");
@@ -67,7 +74,7 @@ var connect = function(){
         button.remove();
 		button2.style = "display:inline;";
 		roomId=+roomId+10;
-		minimaxDepth = 1;
+		minimaxDepth = ea;
         socket.emit('joinedAI', roomId);
 	} else if (enemyId == "normal"){
 		spielart.remove();
@@ -77,7 +84,7 @@ var connect = function(){
         button.remove();
 		button2.style = "display:inline;";
 		roomId=+roomId+10;
-		minimaxDepth = 2;
+		minimaxDepth = no;
         socket.emit('joinedAI', roomId);
 	}
 	 else if (enemyId == "hard"){
@@ -88,8 +95,7 @@ var connect = function(){
         button.remove();
 		button2.style = "display:inline;";
 		roomId=+roomId+10;
-		minimaxDepth = 3;
-		
+		minimaxDepth = ha;
         socket.emit('joinedAI', roomId);
 	} else {
 		console.log("ERROR ENEMY NOT FOUND");
@@ -202,7 +208,7 @@ var onSnapEnd = function () {
     board.position(game.fen());
 	game.cantmove();
 	if(isAIroom(roomId)){
-		AImove();
+		AImove(game.type);
 	}
 };
 
@@ -222,7 +228,6 @@ socket.on('player', (msg) => {
     else
         state.innerHTML = "Warte auf Gegner";
 
-
     var cfg = {
         orientation: color,
         draggable: true,
@@ -231,7 +236,8 @@ socket.on('player', (msg) => {
         onDrop: onDrop,
         onMouseoutSquare: onMouseoutSquare,
         onMouseoverSquare: onMouseoverSquare,
-        onSnapEnd: onSnapEnd
+        onSnapEnd: onSnapEnd,
+		pieceTheme: pieThe
     };
     board = ChessBoard('board', cfg);
 });
@@ -239,43 +245,166 @@ socket.on('player', (msg) => {
 var board;
 
 
+function AIpferdeapfel(spielst){
+	var possibleNextMoves = game.moves();
+	if(spielst == 'easy'){
+		var bestMove = possibleNextMoves[Math.floor(Math.random() * possibleNextMoves.length)];
+		move_neu = game.move_from_san(bestMove)
+		game.move({
+			from: game.algebraic(move_neu.from),
+			to: game.algebraic(move_neu.to),
+			promotion: 'q' 
+		});
+		board.position(game.fen());
+	} else if (spielst == 'normal') { //zwei gegner
+		
+	for(var k = 0; k < possibleNextMoves.length; k++) {
+		possibleNextMoves[k] = game.move_from_san(possibleNextMoves[k]);
+	}
+		
+	var allcombos = new Array();
+	var i = 0;
+	while(possibleNextMoves.length > 0){
+		for(var j = 1; j < possibleNextMoves.length; j++) {
+			allcombos.push(new Array());
+			allcombos[i].push(possibleNextMoves[0])
+			allcombos[i].push(possibleNextMoves[j])
+			i++;
+		}
+		possibleNextMoves.shift();
+	}
+	
+	allcombos.sort(() => Math.random() - 0.5);
+	
+	for(var u = 0; u < allcombos.length; u++){
+		if((allcombos[u][0].from != allcombos[u][1].from) && (allcombos[u][0].to != allcombos[u][1].to)){
+			game.move({
+				from: game.algebraic(allcombos[u][0].from),
+				to: game.algebraic(allcombos[u][0].to),
+				promotion: 'q' 
+			});
+			board.position(game.fen());
+			game.swapcolor();
+			game.move({
+				from: game.algebraic(allcombos[u][1].from),
+				to: game.algebraic(allcombos[u][1].to),
+				promotion: 'q' 
+			});
+			board.position(game.fen());
+			return;
+		}
+	}
+	game.spie = 'easy';
+	AIpferdeapfel('easy');
+
+	} else if (spielst == 'hard'){ //3 gegner, TODO: Die sollen auch zu dritt ziehen
+		
+	for(var k = 0; k < possibleNextMoves.length; k++) {
+		possibleNextMoves[k] = game.move_from_san(possibleNextMoves[k]);
+	}
+		
+	var allcombos = new Array();
+	var i = 0;
+	while(possibleNextMoves.length > 0){
+		for(var j = 0; j < possibleNextMoves.length; j++) {
+			for(var l = 0; l < possibleNextMoves.length; l++) {
+				allcombos.push(new Array());
+				allcombos[i].push(possibleNextMoves[0])
+				allcombos[i].push(possibleNextMoves[j])
+				allcombos[i].push(possibleNextMoves[l])
+				i++;
+			}
+		}
+		possibleNextMoves.shift();
+	}
+	
+	allcombos.sort(() => Math.random() - 0.5);
+	
+	for(var u = 0; u < allcombos.length; u++){
+		if((allcombos[u][0].from != allcombos[u][1].from) && (allcombos[u][0].from != allcombos[u][2].from) && (allcombos[u][1].from != allcombos[u][2].from)
+		&& (allcombos[u][0].to != allcombos[u][1].to) && (allcombos[u][0].to != allcombos[u][2].to) && (allcombos[u][1].to != allcombos[u][2].to)){
+			
+			console.log(allcombos[u]);
+			
+			
+			
+			game.move({
+				from: game.algebraic(allcombos[u][0].from),
+				to: game.algebraic(allcombos[u][0].to),
+				promotion: 'q' 
+			});
+			board.position(game.fen());
+			game.swapcolor();
+			game.move({
+				from: game.algebraic(allcombos[u][1].from),
+				to: game.algebraic(allcombos[u][1].to),
+				promotion: 'q' 
+			});
+			board.position(game.fen());	
+			game.swapcolor();
+			game.move({
+				from: game.algebraic(allcombos[u][2].from),
+				to: game.algebraic(allcombos[u][2].to),
+				promotion: 'q' 
+			});
+			board.position(game.fen());
+			return;
+		}
+	}
+	game.spie = 'normal';
+	AIpferdeapfel('normal');
+	console.log(spielst);
+	}  else {
+		console.log("sollte nie passieren, spielst undefined");
+		console.log(spielst);
+		}
+}
+
+
+function AIdefault(){		
+		//todo folgende zeile kann man glaube ich streichen
+		var x = game.generate_moves(JSON.parse('{"legal": true}'));
+		var bestMove = calculateBestMove();
+		move_neu = game.move_from_san(bestMove)
+		
+		game.move({
+			from: game.algebraic(move_neu.from),
+			to: game.algebraic(move_neu.to),
+			promotion: 'q'
+		});
+		board.position(game.fen());
+	} 
 
 
 
 
 function AImove(){
-			if(!game.cantmove()){
-			var x = game.generate_moves(JSON.parse('{"legal": true}'));
-		
-			//console.log("Hallo Welt");
-			var bestMove = calculateBestMove();
-			//console.log(bestMove);
-			//AI-difficulty
-			//var movenr = Math.floor(Math.random() * x.length); 
-			//move_neu = x[movenr];
-
-			move_neu = game.move_from_san(bestMove)
-		
-			game.move({
-				from: game.algebraic(move_neu.from),
-				to: game.algebraic(move_neu.to),
-				promotion: 'q' // NOTE: always promote to a queen for example simplicity
-			});
-			 board.position(game.fen());
-		} 
+	if(!game.cantmove()){
+		switch(game.type){
+			case 'Pferdeapfel':
+				AIpferdeapfel(game.spie);
+			break;
+			
+			case 'Bauernkloppe':
+				AIdefault();
+			break;
+			
+			case 'normal':
+				AIdefault();
+			break;
+			
+			default:
+			console.log("Game Type not detected!" + game.type);
+			break;
+		}	
+	}
 }
+
 
 //stolen from https://github.com/gautambajaj/Chess-AI/blob/master/js/chessAI.js
 
 
 var calculateBestMove = function() {
-	
-	if(game.type == "Pferdeapfel"){
-		var possibleNextMoves = game.moves();
-		return possibleNextMoves[Math.floor(Math.random() * possibleNextMoves.length)];
-	} else {
-		//console.log("TSCH");
-	}
 	    var possibleNextMoves = game.moves();
 	    var bestMove = -9999;
 	    var bestMoveFound;
@@ -292,6 +421,7 @@ var calculateBestMove = function() {
 	        }
 	    }
 	    return bestMoveFound;
+
 	};
 
 
@@ -457,20 +587,3 @@ var calculateBestMove = function() {
             return 900 + ( isWhite ? whiteKingEval[y][x] : blackKingEval[y][x] );
         }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
