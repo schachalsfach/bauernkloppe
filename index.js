@@ -22,6 +22,8 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
+
+
 io.on('connection', function (socket) {
     // console.log(players);
     var color;
@@ -53,10 +55,38 @@ io.on('connection', function (socket) {
 
         
     });
+	
+	socket.on('joinedAI', function (roomIdString) {
+        // games[roomId] = {}
+		var x = new Boolean("false");
+		var i = 0;
+		roomId = +roomIdString + 0;
+        while(i < 10){
+			if (games[+roomId+i].players == 0) {
+				games[+roomId+i].players = 2;
+				games[+roomId+i].pid[games[+roomId+i].players - 1] = playerId;
+				x = "true";
+				break;
+			}
+			else{
+				i++;
+			}
+		}
+		
+		if(!x){
+			socket.emit('full',-1);
+		}
+		
+        players = games[roomId].players
+        
+        if (players % 2 == 0) color = 'white';
+        else color = 'black';
+
+        socket.emit('player', { playerId, players, color, roomId })
+    });
 
     socket.on('move', function (msg) {
         socket.broadcast.emit('move', msg);
-        // console.log(msg);
     });
 
     socket.on('play', function (msg) {
@@ -67,7 +97,7 @@ io.on('connection', function (socket) {
     socket.on('disconnect', function () {
         for (let i = 0; i < 100; i++) {
             if (games[i].pid[0] == playerId || games[i].pid[1] == playerId)
-                games[i].players--;
+					games[i].players--;
         }
         console.log(playerId + ' disconnected');
 

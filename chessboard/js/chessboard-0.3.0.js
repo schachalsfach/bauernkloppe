@@ -442,6 +442,7 @@ function expandConfig() {
   if (cfg.hasOwnProperty('pieceTheme') !== true ||
       (typeof cfg.pieceTheme !== 'string' &&
        typeof cfg.pieceTheme !== 'function')) {
+	console.log("Muss piece theme ändern");
     cfg.pieceTheme = 'img/chesspieces/wikipedia/{piece}.png';
   }
 
