@@ -51,38 +51,7 @@ io.on('connection', function (socket) {
         else color = 'white';
 
         socket.emit('player', { playerId, players, color, roomId })
-        // players--;
-
         
-    });
-	
-	socket.on('joinedAI', function (roomIdString) {
-        // games[roomId] = {}
-		var x = new Boolean("false");
-		var i = 0;
-		roomId = +roomIdString + 0;
-        while(i < 10){
-			if (games[+roomId+i].players == 0) {
-				games[+roomId+i].players = 2;
-				games[+roomId+i].pid[games[+roomId+i].players - 1] = playerId;
-				x = "true";
-				break;
-			}
-			else{
-				i++;
-			}
-		}
-		
-		if(!x){
-			socket.emit('full',-1);
-		}
-		
-        players = games[roomId].players
-        
-        if (players % 2 == 0) color = 'white';
-        else color = 'black';
-
-        socket.emit('player', { playerId, players, color, roomId })
     });
 
     socket.on('move', function (msg) {
@@ -100,10 +69,7 @@ io.on('connection', function (socket) {
 					games[i].players--;
         }
         console.log(playerId + ' disconnected');
-
     }); 
-
-    
 });
 
 server.listen(port);

@@ -5,14 +5,16 @@ var players;
 var roomId;
 var play = true;
 
-var room = document.getElementById("room")
-var spielart = document.getElementById("spielart")
 var game
 var enemy = document.getElementById("enemy")
 var roomNumber = document.getElementById("roomNumbers")
 var button = document.getElementById("button")
 var button2 = document.getElementById("button2")
 var state = document.getElementById('state')
+var einleitung = document.getElementById('myDIV')
+var plno = document.getElementById("player")
+var bild = document.getElementById("bild")
+var anzeige = document.getElementById("Anzeige");
 
 var minimaxDepth = 3;
 var pieThe = 'img/chesspieces/wikipedia/{piece}.png';
@@ -23,77 +25,101 @@ var no = 2;
 var ha = 3;
 
 
-var connect = function(){
-    roomId = room.value;
-	gameId = spielart.value;
+var connect = function(gameId){
+	glueckszahl = Math.floor(Math.random() * 34);
+    roomId = 0;
 	enemyId = enemy.value;
+	anzeigename = "";
+	
 	switch(gameId){
 		case "Bauernkloppe" : game = new Bauernkloppe();
 		console.log("Bauernkloppe");
+		anzeigename = "Bauernkloppe";
+		if((enemyId == "easy" || enemyId == "normal" || enemyId == "hard") &&  Math.floor(Math.random()*2) == 0){
+			color = 'black'
+		}
 		break;
 		case "normal":
 		console.log("normales Schach");
 		roomId = +roomId + 20;
 		game = new Chess();
+		anzeigename = "Schach";
+		if((enemyId == "easy" || enemyId == "normal" || enemyId == "hard") &&  Math.floor(Math.random()*2) == 0){
+			color = 'black'
+		}
 		break;
 		case "Pferdeapfel":
 		console.log("Pferdeapfel");
 		roomId = +roomId + 40;
 		game = new Pferdeapfel(enemyId);
 		pieThe = 'img/chesspieces/markerstattbauern/{piece}.png'
+		anzeigename = "Pferdeapfelspiel";
 		break;
 		
 		case "damegegenacht" :
 		roomId = +roomId + 60;
 		game = new Damegegenacht();
+		if((enemyId == "easy" || enemyId == "normal" || enemyId == "hard") &&  Math.floor(Math.random()*2) == 0){
+			color = 'black'
+		}
 		console.log("Dame gegen Acht");
+		anzeigename = "Dame gegen 8 Bauern";
 		break;
-		
 		default: console.log("Leer");
 		break;
 	}
-    if (enemyId == "freund") {
-		spielart.remove();
-        room.remove();
-		enemy.remove();
-        roomNumber.innerHTML = "Du spielst in Raum Nummer " + roomId;
-        button.remove();
-		button2.style = "display:inline;";
-        socket.emit('joined', roomId);
-    } else if (enemyId == "easy"){
-		spielart.remove();
-        room.remove();
+	console.log(enemyId);
+	if (enemyId == "easy"){
 		enemy.remove();
         roomNumber.innerHTML = "Du spielst gegen den Computer (leicht)";
+		anzeige.innerHTML = anzeigename;
+
         button.remove();
 		button2.style = "display:inline;";
+		bild.src = '\\img\\chessy\\' + glueckszahl + '.png';
+		bild.style = "display:inline;position:absolute; bottom: 0%; left: 5%;height:150px;width:auto;";
+		einleitung.remove();
 		minimaxDepth = ea;
 		roomId = 9999;
 		initAIgame();
 	} else if (enemyId == "normal"){
-		spielart.remove();
-        room.remove();
+		anzeige.innerHTML = anzeigename;
 		enemy.remove();
         roomNumber.innerHTML = "Du spielst gegen den Computer (mittel)";
         button.remove();
 		button2.style = "display:inline;";
+		bild.src = '\\img\\chessy\\' + glueckszahl + '.png';
+		bild.style = "display:inline;position:absolute; bottom: 0%; left: 5%;height:150px;width:auto;";		einleitung.style.remove();
 		minimaxDepth = no;
 		roomId = 9999;
 		initAIgame();
 	}
 	 else if (enemyId == "hard"){
-		spielart.remove();
-        room.remove();
+		 		anzeige.innerHTML = anzeigename;
 		enemy.remove();
         roomNumber.innerHTML = "Du spielst gegen den Computer (schwer)";
         button.remove();
 		button2.style = "display:inline;";
+		bild.src = '\\img\\chessy\\' + glueckszahl + '.png';
+		bild.style = "display:inline;position:absolute; bottom: 0%; left: 5%;height:150px;width:auto;";		einleitung.remove();
 		minimaxDepth = ha;
 		roomId = 9999;
 		initAIgame();
-	} else {
-		console.log("ERROR ENEMY NOT FOUND");
-	}
+	} else{
+			anzeige.innerHTML = anzeigename;
+		enemy.remove();
+		num = parseInt(enemyId.slice(-1));
+		if(num == 0){
+				num = 10;
+		}
+		roomId+=num;
+        roomNumber.innerHTML = "Du spielst in Raum Nummer " + num;
+        button.remove();
+		button2.style = "display:inline;";
+		bild.src = '\\img\\chessy\\' + glueckszahl + '.png';
+		bild.style = "display:inline;position:absolute; bottom: 0%; left: 5%;height:150px;width:auto;";		einleitung.remove();
+        socket.emit('joined', roomId);
+    }
 }
 
 var initAIgame = function(){
@@ -110,8 +136,10 @@ var initAIgame = function(){
         onSnapEnd: onSnapEnd,
 		pieceTheme: pieThe
     };
-    board = ChessBoard('board', cfg);	
-	
+    board = ChessBoard('board', cfg);
+	if(color == "black"){
+		AImove(game.type);
+	}
 }
 
 var disconnect = function(){
@@ -121,10 +149,25 @@ var disconnect = function(){
 		}
 }
 
+var restart = function(){
+		button3.style="display:none;";
+        if(roomId != 9999){
+			socket.emit('reset');
+		}
+		game.reset();
+		connect();
+}
+
+socket.on('reset', function (msg) {
+    if(roomId == msg)
+	button3.style="display:none;";
+	game.reset();
+	connect();
+});
+
 socket.on('full', function (msg) {
     if(roomId == msg)
 	state.innerHTML = "Dieser Raum ist leider schon voll, bitte wähle einen anderen Raum."
-
 });
 
 socket.on('play', function (msg) {
@@ -141,7 +184,8 @@ socket.on('move', function (msg) {
         board.position(game.fen());
         console.log("moved");
 		if (game.game_over()) {
-			state.innerHTML = 'Spiel beendet';
+			state.innerHTML = '<h1><span style="color: #800080;"><strong>Spiel beendet!</strong></span></h1>';
+			button3.style = "display:inline;";
 			socket.emit('gameOver', roomId);
 		}
     }
@@ -184,7 +228,8 @@ var onDrop = function (source, target) {
     });
 	
     if (game.game_over()) {
-        state.innerHTML = 'Spiel beendet';
+		state.innerHTML = '<h1><span style="color: #800080;"><strong>Spiel beendet!</strong></span></h1>';
+		button3.style = "display:inline;";
         socket.emit('gameOver', roomId)
     }
     if (move === null) return 'snapback';
@@ -226,9 +271,7 @@ var onSnapEnd = function () {
 
 
 socket.on('player', (msg) => {
-    var plno = document.getElementById('player')
     color = msg.color;
-
     plno.innerHTML = 'Player ' + msg.players + " : " + color;
     players = msg.players;
 

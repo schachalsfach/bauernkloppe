@@ -34,6 +34,7 @@
     body{
       margin: 4%
     }
+	}
   </style>
 
 </head>
@@ -41,121 +42,93 @@
 <body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<h1 style="color: #5e9ca0;"><div id="Anzeige"></div></strong></p></h1>
+<img src='https://www.deutsche-schachjugend.de/fileadmin/_processed_/f/b/csm_Schulschachstiftung_eV-Logo_11e299c936.jpg' style='position:absolute; top: 5%; right: 5%; height: 90px; width:240px;' alt='' />
+<img src='\img\chessy\20.png' style='position:absolute; bottom: 0%; right: 5%;height:150px;width:auto;' alt='' />
+<img id="bild" src='\img\chessy\13.png' style='display:none; position:absolute; bottom: 0%; left: 5%;height:150px;width:auto;' alt='' />
 
-
+<div id = "myDIV">
 <h1 style="color: #5e9ca0;">Willkommen zu den Minispielen!</h1>
-<h2 style="color: #2e6c80;">Inhalte weitestgehend als Ergänzung zum Deutschen Schulschachpatent</h2>
+<h2 style="color: #2e6c80;">Inhalte als Ergänzung zum Deutschen Schulschachpatent</h2>
 <p>&nbsp;</p>
-<p>Alles hier wurde von mir "zusammengeschustert" - Fehler treten noch h&auml;ufig auf!</p>
-<p>Im Falle eines Fehlers bitte mit kurzer Beschreibung senden an meine E-Mail <a>[meinVorname].[meinNachname]@fau.de</a></p>
+<p>Falls ein Fehler auftritt bitte eine Mail an <a>[meinVorname].[meinNachname]@fau.de</a></p>
 <p>Bei Anfragen bzgl. neuer Spiele/Verbesserungen oder Nutzung anderswo, bitte auch kontaktieren.</p>
-<p>Viele Gr&uuml;&szlig;e<br />Johannes Rieder<br />Schulschachstiftung&nbsp;&nbsp; </p>
+<p>Viele Gr&uuml;&szlig;e<br />Johannes Rieder<br /> Deutsche Schulschachstiftung e.V.&nbsp;&nbsp; </p>
+<p> <a href="/impressum.html">Impressum</a> </p>
 
-<p> <a href="https://bauernkloppe.herokuapp.com/impressum.html">Impressum</a> </p>
+<h3 style="color: #2e6c80;"><a href="\kleinespiele.pdf" target="_blank">Erklärung aller Spiele (pdf)</a></h3>
+<p>&nbsp;</p>
 
-<h2 style="color: #2e6c80;">Angebotene Spiele:</h2>
+<p><b>Gegner:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b>
+              		<select id="enemy" name="enemy">
+					<option value="easy">Computer (leicht)</option>
+					<option value="normal">Computer (mittel)</option>
+					<option value="hard">Computer (schwer)</option>
+					<option value="freund1">Freund (Raum 1)</option>
+					<option value="freund2">Freund (Raum 2)</option>
+					<option value="freund3">Freund (Raum 3)</option>
+					<option value="freund4">Freund (Raum 4)</option>
+					<option value="freund5">Freund (Raum 5)</option>
+					<option value="freund6">Freund (Raum 6)</option>
+					<option value="freund7">Freund (Raum 7)</option>
+					<option value="freund8">Freund (Raum 8)</option>
+					<option value="freund9">Freund (Raum 9)</option>
+					<option value="freund0">Freund (Raum 10)</option>
+					</select>
+</p>
 <table class="editorDemoTable" style="width: 629px;">
-<thead>
-<tr>
-<td style="width: 274px;"><b>Name des Spiels</b></td>
-<td style="width: 250px;"><b>Beschreibung</b></td>
-</tr>
-</thead>
 <tbody>
 <tr>
-<td style="width: 274px;">Bauernkloppe</td>
-<td style="width: 250px;">Wie in "Fritz und Fertig" - 4 Bauern gegen 4 Bauern. En passant deaktiviert, wenn einer nicht mehr ziehen kann darf der andere weiterspielen.</td>
+<td style="width: 204px;"  height="100" >Bauernkloppe</td>
+<td style="width: 274px;"><div class="col">
+              <button id="button" class="btn btn-success" onclick="connect('Bauernkloppe')">Starten</button>
+            </div></td>		            
 </tr>
 <tr>
 </tr>
 <tr>
-<td style="width: 274px;">Normales Schach</td>
-<td style="width: 250px;">Normales Schach mit allen Regeln</td>
+<td style="width: 204px;"  height="100" >Normales Schach</td>
+			<td style="width: 274px;"><div class="col">
+              <button id="button" class="btn btn-success" onclick="connect('normal')">Starten</button>
+            </div></td>	
 </tr>
 <tr>
 </tr>
 <tr>
-<td style="width: 274px;">Pferdeapfelspiel</td>
-<td style="width: 250px;">Nach jedem Zug hinterlassen die Springer einen Pferdeapfel auf dem Feld auf dem sie standen. Hier darf nun kein anderes Pferd mehr darauf hüpfen. Gewonnen hat, wer zuletzt noch springen kann.</td>
+<td style="width: 204px;"  height="100" >Pferdeapfelspiel</td>
+			<td style="width: 274px;"><div class="col">
+              <button id="button" class="btn btn-success" onclick="connect('Pferdeapfel')">Starten</button>
+            </div></td>	
 </tr>
 <tr>
 </tr>
 <tr>
-<td style="width: 274px;">Dame gegen 8 Bauern</td>
-<td style="width: 250px;">Die Dame muss alle Bauern schlagen, die Bauern müssen versuchen eine Dame zu werden.</td>
+<td style="width: 204px;"  height="100" >Dame gegen 8 Bauern</td>
+			<td style="width: 274px;"><div class="col">
+              <button id="button" class="btn btn-success" onclick="connect('damegegenacht')">Starten</button>
+            </div></td>	
 </tr>
 <tr>
 
 </tbody>
 </table>
 <p><strong>&nbsp;</strong></p>
-<p><strong>Ich freue mich &uuml;ber Feedback!</strong></p>
+<p><strong><div id="player"></div></strong></p>
+<p><strong><div id="roomNumbers">Ich freue mich über Feedback!</div></strong></p>
 <p><strong>&nbsp;</strong></p>
 
+</div>
 
   <div class="container">
       <div id="board" style="width: 500px; margin: auto"></div>
       <div style="margin: auto"">
-        <div id="player"></div>
-        <div id="roomNumbers">Bitte geben Sie das gewünschte Spiel und wählen Sie zusammen mit Ihrem Gegner einen gemeinsamen Raum (1-20) aus</div>
         <form>
-          <div class="row">
-		   <div class="col">
-					<select id="spielart" name="spielart">
-					<option value="Bauernkloppe">Bauernkloppe</option>
-					<option value="normal">Normales Schach</option>
-					<option value="Pferdeapfel">Pferdeapfelspiel</option>
-					<option value="damegegenacht">Dame gegen 8 Bauern</option>
-					<option value="Rundreise">Rundreise Läufer+Turm</option>
-					<option value="Springerparcours">Springerparcours</option>
-					<option value="Sumoringer">Sumoringer</option>
-					</select>
-			</div>		  
-            <div class="col">
-              		<select id="room" name="room">
-					<option value="1">Raum 1</option>
-					<option value="2">Raum 2</option>
-					<option value="3">Raum 3</option>
-					<option value="4">Raum 4</option>
-					<option value="5">Raum 5</option>
-					<option value="6">Raum 6</option>
-					<option value="7">Raum 7</option>
-					<option value="8">Raum 8</option>
-					<option value="9">Raum 9</option>
-					<option value="10">Raum 10</option>
-					<option value="11">Raum 11</option>
-					<option value="12">Raum 12</option>
-					<option value="13">Raum 13</option>
-					<option value="14">Raum 14</option>
-					<option value="15">Raum 15</option>
-					<option value="16">Raum 16</option>
-					<option value="17">Raum 17</option>
-					<option value="18">Raum 18</option>
-					<option value="19">Raum 19</option>
-					<option value="20">Raum 20</option>
-					</select>
-            </div>
-			<div class="col">
-              		<select id="enemy" name="enemy">
-					<option value="freund">Freund</option>
-					<option value="easy">Computer (leicht)</option>
-					<option value="normal">Computer (mittel)</option>
-					<option value="hard">Computer (schwer)</option>
-					</select>
-            </div>
-			
-            <div class="col">
-              <button id="button" class="btn btn-success" onclick="connect()">Starten</button>
-            </div>
-			<div class="col">
               <button id="button2" class="btn btn-danger" onclick="disconnect()" style="display:none;">Spiel verlassen</button>
-            </div>
-          </div>
+			  <button id="button3" class="btn btn-success" onclick="restart()" style="display:none;">Nächstes Spiel (gleicher Gegner)</button>
         </form>
       
         <div id="state"></div>
     </div>
-    
   </div>
   
 
