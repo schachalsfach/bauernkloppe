@@ -806,6 +806,16 @@ var Bauernkloppe = function(fen) {
 		return false;
 	}
   }
+  
+  	function nomove(){
+	  if(generate_moves().length === 0){
+		 turn = swap_color(turn);
+			if(generate_moves().length === 0){
+			return true; }
+		turn = swap_color(turn);
+    }
+	return false;
+	}
 
   function insufficient_material() {
     var num_pieces_black = 0
@@ -1334,7 +1344,21 @@ var Bauernkloppe = function(fen) {
 	},
 	
 	hasQueen: function(){
-		
+	var sq_color = 0
+
+	for (var i = SQUARES.a8; i <= SQUARES.h1; i++) {
+		sq_color = (sq_color + 1) % 2
+		if (i & 0x88) {
+			i += 7
+			continue
+		}
+		var piece = board[i]
+		if (piece) {
+			if(piece.type == QUEEN){
+				return true;
+			}
+		}
+    }
 	},
 
     insufficient_material: function() {
@@ -1345,21 +1369,74 @@ var Bauernkloppe = function(fen) {
       return in_threefold_repetition()
     },
 
+	nomove: function() {
+	  if(generate_moves().length === 0){
+		 turn = swap_color(turn);
+			if(generate_moves().length === 0){
+			return true; }
+		turn = swap_color(turn);
+    }
+	return false;
+	
+    },
+	
     game_over: function() {
-
 	  return (
         insufficient_material() ||
-		hasQueen()
+		hasQueen() ||
+		nomove()
       )
     },
+	
+
+	
+	werhatgewonnen: function() {
+    var sq_color = 0;
+	var wei = 0;
+	var sch = 0;
+	for (var i = SQUARES.a8; i <= SQUARES.h1; i++) {
+		sq_color = (sq_color + 1) % 2
+		if (i & 0x88) {
+			i += 7
+			continue
+		}
+		var piece = board[i]
+		if (piece) {
+			if(piece.type == QUEEN){
+				if(piece.color === 'w'){
+				return "Weiß"; }
+				else{
+					return "Schwarz";
+				}
+			}
+			 else {
+				if(piece.color === 'w'){
+				wei++;
+				}
+				else{
+				sch++;
+					}
+				}
+	} }
+	if(wei == sch){
+	return "keiner";  }
+	else if(wei > sch){
+	return "Weiß";}
+	else {
+		return "Schwarz";
+	}
+		},
 
 	cantmove: function(){
 	  if(generate_moves().length === 0){
-		turn = swap_color(turn);
 		return true;
 	  } else {
 		  return false;
 	  }
+	},
+	
+	swapturn: function(){
+	   turn = swap_color(turn);
 	},
 	
 	generate_moves: function(){

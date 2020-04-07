@@ -1339,6 +1339,36 @@ var Damegegenacht = function(fen) {
     }
 	  return (haspawn == 0);
     },
+	
+	werhatgewonnen: function() {
+    var sq_color = 0;
+	var wei = 0;
+	var sch = 0;
+	for (var i = SQUARES.a8; i <= SQUARES.h1; i++) {
+		sq_color = (sq_color + 1) % 2
+		if (i & 0x88) {
+			i += 7
+			continue
+		}
+		var piece = board[i]
+		if (piece) {
+			if(piece.type == QUEEN){
+				if(piece.color === 'w'){
+				return "Weiß"; }
+			}
+			 else {
+				if(piece.color === 'w'){
+				wei++;
+				}
+				else{
+				sch++;
+					}
+				}
+	} } 
+		return "Schwarz";
+	
+	},
+
 
     validate_fen: function(fen) {
       return validate_fen(fen)

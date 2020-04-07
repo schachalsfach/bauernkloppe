@@ -47,6 +47,7 @@ var connect = function(gameId){
 		if((enemyId == "easy" || enemyId == "normal" || enemyId == "hard") &&  Math.floor(Math.random()*2) == 0){
 			color = 'black'
 		}
+		ha = 2;
 		break;
 		case "Pferdeapfel":
 		console.log("Pferdeapfel");
@@ -89,7 +90,7 @@ var connect = function(gameId){
         button.remove();
 		button2.style = "display:inline;";
 		bild.src = '\\img\\chessy\\' + glueckszahl + '.png';
-		bild.style = "display:inline;position:absolute; bottom: 0%; left: 5%;height:150px;width:auto;";		einleitung.style.remove();
+		bild.style = "display:inline;position:absolute; bottom: 0%; left: 5%;height:150px;width:auto;";		einleitung.remove();
 		minimaxDepth = no;
 		roomId = 9999;
 		initAIgame();
@@ -106,7 +107,7 @@ var connect = function(gameId){
 		roomId = 9999;
 		initAIgame();
 	} else{
-			anzeige.innerHTML = anzeigename;
+		anzeige.innerHTML = anzeigename;
 		enemy.remove();
 		num = parseInt(enemyId.slice(-1));
 		if(num == 0){
@@ -117,7 +118,8 @@ var connect = function(gameId){
         button.remove();
 		button2.style = "display:inline;";
 		bild.src = '\\img\\chessy\\' + glueckszahl + '.png';
-		bild.style = "display:inline;position:absolute; bottom: 0%; left: 5%;height:150px;width:auto;";		einleitung.remove();
+		bild.style = "display:inline;position:absolute; bottom: 0%; left: 5%;height:150px;width:auto;";
+		einleitung.remove();
         socket.emit('joined', roomId);
     }
 }
@@ -138,7 +140,8 @@ var initAIgame = function(){
     };
     board = ChessBoard('board', cfg);
 	if(color == "black"){
-		AImove(game.type);
+		setTimeout(() => { 	AImove(); }, 1000);
+	
 	}
 }
 
@@ -156,6 +159,18 @@ var restart = function(){
 		}
 		game.reset();
 		connect();
+}
+
+var init_game_over = function(){
+			winner = game.werhatgewonnen();
+			state.innerHTML = '<p>&nbsp;</p><h1><span style="color: #800080;"><strong>Spiel beendet - ' + winner + ' hat gewonnen!</strong></span></h1>';
+			if((winner == "Weiß" && color == "white") || (winner == "Schwarz" && color == "black")){
+				console.log(color);
+				con = new Confetti();
+				con.startConfetti();
+			}
+			//button3.style = "display:inline;";
+			socket.emit('gameOver', roomId);
 }
 
 socket.on('reset', function (msg) {
@@ -184,9 +199,7 @@ socket.on('move', function (msg) {
         board.position(game.fen());
         console.log("moved");
 		if (game.game_over()) {
-			state.innerHTML = '<h1><span style="color: #800080;"><strong>Spiel beendet!</strong></span></h1>';
-			button3.style = "display:inline;";
-			socket.emit('gameOver', roomId);
+			init_game_over();
 		}
     }
 });
@@ -228,9 +241,7 @@ var onDrop = function (source, target) {
     });
 	
     if (game.game_over()) {
-		state.innerHTML = '<h1><span style="color: #800080;"><strong>Spiel beendet!</strong></span></h1>';
-		button3.style = "display:inline;";
-        socket.emit('gameOver', roomId)
+		init_game_over();
     }
     if (move === null) return 'snapback';
     else
@@ -263,9 +274,21 @@ var onMouseoutSquare = function (square, piece) {
 
 var onSnapEnd = function () {
     board.position(game.fen());
-	game.cantmove();
+	if(game.cantmove()){
+		 game.swapturn();	
+	}
 	if(roomId == 9999){
-		AImove(game.type);
+		AImove();
+		while(game.cantmove() && !game.game_over()){
+			game.swapturn();
+			console.log("mache einen AI-move und schaue weiter");
+			sleep(400);
+			AImove();
+			sleep(200);		
+		}
+		if(game.game_over()){
+			init_game_over();
+		}
 	}
 };
 
@@ -298,6 +321,18 @@ socket.on('player', (msg) => {
 });
 
 var board;
+
+
+
+
+function sleep(milliseconds) {
+  var start = new Date().getTime();
+  for (var i = 0; i < 1e7; i++) {
+    if ((new Date().getTime() - start) > milliseconds){
+      break;
+    }
+  }
+}
 
 
 function AIpferdeapfel(spielst){
@@ -434,7 +469,8 @@ function AIdefault(){
 
 
 function AImove(){
-	if(!game.cantmove()){
+	console.log("AI denkt");
+	if(!game.cantmove() && !game.game_over()){
 		switch(game.type){
 			case 'Pferdeapfel':
 				AIpferdeapfel(game.spie);
@@ -455,6 +491,8 @@ function AImove(){
 			console.log("Game Type not detected!" + game.type);
 			break;
 		}	
+	} else {
+	 game.swapturn();	
 	}
 }
 
@@ -645,3 +683,4 @@ var calculateBestMove = function() {
             return 900 + ( isWhite ? whiteKingEval[y][x] : blackKingEval[y][x] );
         }
 };
+

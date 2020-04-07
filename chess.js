@@ -1358,6 +1358,11 @@ var Chess = function(fen) {
         in_threefold_repetition()
       )
     },
+	
+	werhatgewonnen: function() {
+	  return "Schwarz";
+    },
+
 
     validate_fen: function(fen) {
       return validate_fen(fen)
