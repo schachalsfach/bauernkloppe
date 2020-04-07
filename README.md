@@ -1,10 +1,9 @@
 # Online Chess
-This is a chess website where people can play against each other online in real time. 
+This is a chess website where people can play against each other online in real time. Verschiedene Minispiele
 
 # Links
-Play a game of chess here - [Live demo](https://chess0.herokuapp.com) 
-
-If you want to know how this project works, read the tutorial at [Making an online chess game with Socket.io](https://aveeksaha.gitlab.io/post/making-an-online-chess-website-with-socketio/)
+Live Demo: 
+http://minispiele.schachalsfach.de/
 
 # Features
 <ul>
